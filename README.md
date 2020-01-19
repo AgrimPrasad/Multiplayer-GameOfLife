@@ -10,7 +10,7 @@ This implementation has the following high-level architecture:
 
 Vue.js based app with socket.io client-side library.
 
-Vue.js was chosen due to:
+Vue.js was chosen for the following reasons:
 
 1. Mature client-side library with a lively ecosystem.
 
