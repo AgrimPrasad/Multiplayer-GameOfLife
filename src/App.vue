@@ -48,13 +48,13 @@
                 <span class="navbar-item">
                   <a
                     class="button is-info"
-                    href="https://github.com/Ijee/Game-of-Life-Vue2"
+                    href="https://github.com/AgrimPrasad/Multiplayer-GameOfLife"
                     target="_blank"
                     rel="noopener">
                     <span class="icon">
                       <i class="fab fa-github"/>
                     </span>
-                    <span>Ijee</span>
+                    <span>AgrimPrasad</span>
                   </a>
                 </span>
               </div>
