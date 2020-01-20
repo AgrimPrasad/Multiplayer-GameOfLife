@@ -313,7 +313,7 @@ export default {
       if (this.isRunning) {
         this.intervalID = setInterval(
           this.updateMessage,
-          50000 / this.speed,
+          250000 / this.speed, // interval in ms, min interval is 500ms
           'nextStep'
         );
       }
