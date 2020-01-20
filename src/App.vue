@@ -213,9 +213,9 @@ export default {
   },
   data() {
     return {
-      // The message that gets send down to app-grid at a steady interval
+      // The message that gets sent down to app-grid at a steady interval
       message: '',
-      // Export and import tokens that either get send down / come up
+      // Export and import tokens that either get sent down / come up
       // from app-grid
       importToken: '',
       exportToken: '',

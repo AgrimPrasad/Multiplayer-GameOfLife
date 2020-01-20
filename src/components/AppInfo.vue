@@ -1,16 +1,17 @@
 <template>
   <div class="gameinfo">
-    <h1 class="title">Game of Life</h1>
-    <h2 class="subtitle">Implementation of John Conway's Game of Life built with
-    vuejs 2, bulma and Fontawesome. </h2>
+    <h1 class="title">Game of Life - Multiplayer</h1>
+    <h2 class="subtitle">Multiplayer implementation of John Conway's Game of Life built with
+    Vue.js, Express and socket.io </h2>
     <hr>
     <div class="content">
       <h5 class="title is-5">About the game:</h5>
-      Created in 1970, John Horton Conway made this well known game also known
+      <p>Created in 1970, John Horton Conway made this well known game also known
       as 'Life'. The game is automated and based on 4 rules that determine
       the status of all cells inside the grid. A cell can either be 'alive' or
       'dead'. Every turn (tick) rules get applied to all cells that are
-      currently alive. Further Information can be found <a href="https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life">here</a>.
+      currently alive. Further Information can be found <a href="https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life">here</a>.</p>
+      <br />
       <h5 class="title is-5">The rules:</h5>
       <ol>
         <li> Any live cell with fewer than two live neighbours dies,
@@ -23,10 +24,11 @@
         a live cell, as if by <strong>reproduction</strong></li>
       </ol>
     </div>
+    <br />
     <h5 class="title is-5">Share:</h5>
-    If you found an interesting pattern you can send or save the current
+    <p>If you found an interesting pattern you can send or save the current
     one easily with the 'Export' button. There are also some pre-defined
-    scenarios on the dropdown menu when you click on 'Import'
+    scenarios on the dropdown menu when you click on 'Import'.</p>
   </div>
 </template>
 

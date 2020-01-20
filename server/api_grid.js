@@ -1,6 +1,6 @@
 var express = require('express');
 var shortid = require('shortid');
-var shared = require('../shared');
+var shared = require('./shared');
 var _ = require('underscore');
 
 var router = express.Router();
