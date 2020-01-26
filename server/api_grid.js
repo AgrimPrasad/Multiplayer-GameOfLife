@@ -6,7 +6,6 @@ var _ = require('underscore');
 var router = express.Router();
 
 router.get('/current', function(req, res, next) {
-
     res.json({
         error: false,
         grid: shared.grid,

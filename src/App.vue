@@ -277,10 +277,10 @@ export default {
       } else if (event === 'exportSession') {
         this.updateMessage('exportSession');
       } else if (event === 'slowDown') {
-        this.speed > 100 ? this.changeSpeed(-100) : this.changeSpeed(-20);
+        this.speed > 100 ? this.changeSpeed(-100) : this.changeSpeed(-10);
         this.restartInterval();
       } else if (event === 'speedUp') {
-        this.speed < 100 ? this.changeSpeed(20) : this.changeSpeed(100);
+        this.speed < 100 ? this.changeSpeed(10) : this.changeSpeed(100);
         this.restartInterval();
       } else {
         this.updateMessage(event);
@@ -313,7 +313,7 @@ export default {
       if (this.isRunning) {
         this.intervalID = setInterval(
           this.updateMessage,
-          250000 / this.speed, // interval in ms, min interval is 500ms
+          50000 / this.speed, // interval in ms, min interval is 500ms
           'nextStep'
         );
       }
@@ -326,10 +326,10 @@ export default {
      */
     changeSpeed: function(speed) {
       this.speed += speed;
-      if (this.speed < 20) {
-        this.speed = 20;
-      } else if (this.speed > 500) {
-        this.speed = 500;
+      if (this.speed < 10) {
+        this.speed = 10;
+      } else if (this.speed > 100) {
+        this.speed = 100;
       }
     },
     /**
