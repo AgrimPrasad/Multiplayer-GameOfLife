@@ -122,9 +122,6 @@ export default {
         this.gridList[x][y].isAlive = bool;
         this.updateCellCount(bool);
       }
-      // let row = this.gridList[x];
-      // row.splice(y, 1, {isAlive: true});
-      // this.gridList.splice(x, 1, row);
     },
     /**
      * The main function that updates the grid
