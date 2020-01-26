@@ -76,6 +76,7 @@
                     :message="message"
                     :import-token="importToken"
                     :current-speed="speed"
+                    :server-addr="serverAddr"
                     @exportToken="exportSession($event)" />
                   <app-info v-if="mainComponent == 'infoPage'"/>
                 </keep-alive>
@@ -204,6 +205,12 @@ import Controller from './components/Controller.vue';
 import Grid from './components/Grid.vue';
 import AppInfo from './components/AppInfo.vue';
 import {setInterval, clearInterval} from 'timers';
+import io from 'socket.io-client';
+
+let serverAddr = process.env.SERVER_ADDRESS || 'http://localhost:3000';
+
+let socket = io.connect(serverAddr);
+
 export default {
   name: 'App',
   components: {
@@ -233,6 +240,9 @@ export default {
       // Variables to determine which page/scenario to show
       mainComponent: 'gamePage',
       selectedScenario: 'scenario',
+
+      // API Server Address
+      serverAddr: serverAddr,
     };
   },
   watch: {

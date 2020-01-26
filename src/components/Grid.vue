@@ -50,6 +50,10 @@ export default {
       default: 0,
       type: Number,
     },
+    serverAddr: {
+      default: '',
+      type: String,
+    },
   },
   data() {
     return {
@@ -101,7 +105,9 @@ export default {
      * the website to use for most operations.
      */
     fetchCells: function() {
-      fetch("http://localhost:3000/api/grid/current").then(stream => stream.json())
+      const currentGridAPI = this.serverAddr+'/api/grid/current'
+      fetch(currentGridAPI)
+      .then(stream => stream.json())
       .then(data => {
         this.gridList = data.grid.gridList;
         this.cellCount = data.grid.cellCount;

@@ -8,7 +8,7 @@ router.get('/current', function(req, res, next) {
     res.json({
         error: false,
         grid: _grid,
-        running: (simulationId != undefined)
+        isRunning: (simulationId != undefined)
     });
 });
 
@@ -69,42 +69,6 @@ router.get('/start', function(req, res, next) {
         }
         return neighbours;
     };
-
-    /**
-     * Returns the amount of live neighbours for
-     * a specific cell on the grid.
-     *
-     * @param {number} posX - the x position
-     * @param {number} posY - the Y position
-     * @return {number} neighbours - amount of neighbours
-     */
-    let _countLiveNeighbors = function(row, col, grid) {
-    	let count = 0;
-
-        for (let i = -1; i <= 1; i++) {
-            for (let j = -1; j <= 1; j++) {
-                let neighborRow = row + i;
-                let neighborColumn = col + j;
-
-                // The cell itself is not a neighbor
-                if (i == 0 && j == 0) {
-                    continue;
-                }
-
-                // Border cases
-                if ((neighborRow == -1) || (neighborRow == _grid.width) || (neighborColumn == -1) || (neighborColumn == _grid.height)) {
-                    continue;
-                }
-
-                // We've found a live neighbor
-                if (grid[neighborRow][neighborColumn]) {
-                	count++;
-                }
-            }
-        }
-
-        return count;
-    }
 
     // Start simulation
     simulationId = setInterval(function() {

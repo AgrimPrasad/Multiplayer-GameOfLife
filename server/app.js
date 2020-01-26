@@ -7,11 +7,12 @@ import { generate } from 'shortid';
 import randomColor from 'randomcolor';
 import { chain } from 'underscore';
 import cors from 'cors';
+import socketIO from 'socket.io';
 
-import { grid, io, users as _users } from './shared';
-import { cellCalc } from './util';
+import * as shared from './shared';
+import * as util from './util';
 
-export let app = express();
+let app = express();
 let server = createServer(app);
 
 // enable cors as client could be on a different server
@@ -23,16 +24,19 @@ app.set('views', './public');
 app.set('view engine', 'ejs');
 
 // Initiate Grid at server startup
-grid = cellCalc(grid);
+shared.grid = util.cellCalc(shared.grid);
 
 // Initiate Socket.io using the same http server
 // created above
-io = require('socket.io').listen(server);
+shared.io = socketIO.listen(server);
 
 // On a new connection event,
 // create a new user
 // and announce to all users
-io.sockets.on('connection', function (socket) {
+shared.io.sockets.on('connection', function (socket) {
+    // TODO: debug logs, delete later
+    console.log('client connected!')
+
     var userId = generate();
 
     var user = {
@@ -42,7 +46,7 @@ io.sockets.on('connection', function (socket) {
         userColor: randomColor()
     };
 
-    _users[socket.id] = user;
+    shared.users[socket.id] = user;
 
     // Log
     var message = {
@@ -61,8 +65,8 @@ io.sockets.on('connection', function (socket) {
     socket.emit('Welcome', user);
 
     // Broadcast to all users
-    io.sockets.emit('userConnected', {
-        users: chain(_users)
+    shared.io.sockets.emit('userConnected', {
+        users: chain(shared.users)
             .map(function (user) {
                 return {
                     userId: user.userId,
@@ -76,8 +80,10 @@ io.sockets.on('connection', function (socket) {
     // Handle disconnection immediately
     // Re-connect would be a new connection
     socket.on('disconnect', function () {
+        // TODO: debug logs, delete later
+        console.log('client disconnected!')
 
-        delete _users[socket.id];
+        delete shared.users[socket.id];
 
         // Log
         var message = {
@@ -93,9 +99,9 @@ io.sockets.on('connection', function (socket) {
         // messages.push(message);
 
         // Broadcast disconnection to all users
-        io.sockets.emit('userDisconnected', {
+        shared.io.sockets.emit('userDisconnected', {
             user: user,
-            users: chain(_users)
+            users: chain(shared.users)
                 .map(function (user) {
                     return {
                         userId: user.userId,
@@ -126,7 +132,7 @@ app.use('/api/', function (req, res, next) {
     res.user = undefined;
 
     if (req.query.socketId != null) {
-        res.user = _users[req.query.socketId];
+        res.user = shared.users[req.query.socketId];
     }
 
     next();
