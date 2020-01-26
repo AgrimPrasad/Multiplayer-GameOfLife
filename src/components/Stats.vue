@@ -2,7 +2,7 @@
   <div class="box">
     <div class="columns is-fullwidth is-gapless">
       <div class="column is-size-7-mobile is-half-mobile">
-        <strong>TICK: {{ currentTick }}</strong>
+        <strong>TICKS: {{ currentTick }}</strong>
       </div>
       <div class="column is-size-7-mobile is-half-mobile">
         <strong>CELL COUNT: {{ cellCount }}</strong>
@@ -14,7 +14,10 @@
         <strong>CELLS CREATED: {{ cellsCreated }}</strong>
       </div>
       <div class="column is-size-7-mobile is-half-mobile">
-        <strong>SPEED: {{ currentSpeed }} %</strong>
+        <strong>TICK SPEED: {{ currentSpeed }}%</strong>
+      </div>
+      <div class="column is-size-7-mobile is-half-mobile">
+        <strong>TICK INTERVAL: {{ this.currentInterval() }}ms</strong>
       </div>
     </div>
   </div>
@@ -47,7 +50,11 @@ export default {
   data() {
     return {};
   },
-  methods: {},
+  methods: {
+    currentInterval: function() {
+      return Math.round(50000 / this.currentSpeed);
+    }
+  },
 };
 </script>
 

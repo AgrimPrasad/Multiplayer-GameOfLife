@@ -48,13 +48,13 @@
                 <span class="navbar-item">
                   <a
                     class="button is-info"
-                    href="https://github.com/Ijee/Game-of-Life-Vue2"
+                    href="https://github.com/AgrimPrasad/Multiplayer-GameOfLife"
                     target="_blank"
                     rel="noopener">
                     <span class="icon">
                       <i class="fab fa-github"/>
                     </span>
-                    <span>Ijee</span>
+                    <span>AgrimPrasad</span>
                   </a>
                 </span>
               </div>
@@ -213,9 +213,9 @@ export default {
   },
   data() {
     return {
-      // The message that gets send down to app-grid at a steady interval
+      // The message that gets sent down to app-grid at a steady interval
       message: '',
-      // Export and import tokens that either get send down / come up
+      // Export and import tokens that either get sent down / come up
       // from app-grid
       importToken: '',
       exportToken: '',
@@ -277,10 +277,10 @@ export default {
       } else if (event === 'exportSession') {
         this.updateMessage('exportSession');
       } else if (event === 'slowDown') {
-        this.speed > 100 ? this.changeSpeed(-100) : this.changeSpeed(-20);
+        this.speed > 100 ? this.changeSpeed(-100) : this.changeSpeed(-10);
         this.restartInterval();
       } else if (event === 'speedUp') {
-        this.speed < 100 ? this.changeSpeed(20) : this.changeSpeed(100);
+        this.speed < 100 ? this.changeSpeed(10) : this.changeSpeed(100);
         this.restartInterval();
       } else {
         this.updateMessage(event);
@@ -313,7 +313,7 @@ export default {
       if (this.isRunning) {
         this.intervalID = setInterval(
           this.updateMessage,
-          50000 / this.speed,
+          50000 / this.speed, // interval in ms, min interval is 500ms
           'nextStep'
         );
       }
@@ -326,10 +326,10 @@ export default {
      */
     changeSpeed: function(speed) {
       this.speed += speed;
-      if (this.speed < 20) {
-        this.speed = 20;
-      } else if (this.speed > 500) {
-        this.speed = 500;
+      if (this.speed < 10) {
+        this.speed = 10;
+      } else if (this.speed > 100) {
+        this.speed = 100;
       }
     },
     /**

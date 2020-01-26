@@ -30,7 +30,11 @@ Node.js (Express) based server with socket.io server-side library for handling c
 
 This choice was made due to socket.io being well integrated with the Node.js ecosystem.
 
-### Deployment
+### Tests
+
+[TODO: Add testing information]
+
+### CI/CD
 
 This example can be deployed on Heroku.
 

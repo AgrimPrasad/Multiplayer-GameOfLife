@@ -1,7 +1,6 @@
-var express = require('express');
-var shared = require('../shared');
+import { Router } from 'express';
 
-var router = express.Router();
+var router = Router();
 
 router.get('/info', function(req, res, next) {
 
@@ -13,4 +12,4 @@ router.get('/info', function(req, res, next) {
     });
 });
 
-module.exports = router;
+export default router;
