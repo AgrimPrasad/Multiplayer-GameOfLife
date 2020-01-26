@@ -6,12 +6,17 @@ import { json, urlencoded } from 'body-parser';
 import { generate } from 'shortid';
 import randomColor from 'randomcolor';
 import { chain } from 'underscore';
+import cors from 'cors';
 
 import { grid, io, users as _users } from './shared';
 import { cellCalc } from './util';
 
 export let app = express();
 let server = createServer(app);
+
+// enable cors as client could be on a different server
+// for a production application, domains should instead be selectively whitelisted for cors
+app.use(cors());
 
 // A default engine is required, even though we render plain html
 app.set('views', './public');

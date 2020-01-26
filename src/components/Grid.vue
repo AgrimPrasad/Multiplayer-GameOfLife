@@ -92,21 +92,21 @@ export default {
     },
   },
   created() {
-    this.cellCalc();
+    this.fetchCells();
   },
   methods: {
     /**
-     * Creates a 2D-Array during runtime for
+     * Fetches current state of grid from server
+     * and then creates a 2D-Array during runtime for
      * the website to use for most operations.
      */
-    cellCalc: function() {
-      for (let i = 0; i < this.width; i++) {
-        this.gridList[i] = [];
-        for (let j = 0; j < this.height; j++) {
-          this.gridList[i][j] = {isAlive: false};
-        }
-      }
-      this.cellCount = this.width * this.height;
+    fetchCells: function() {
+      fetch("http://localhost:3000/api/grid/current").then(stream => stream.json())
+      .then(data => {
+        this.gridList = data.grid.gridList;
+        this.cellCount = data.grid.cellCount;
+      })
+      .catch(error => console.error(error, 'fetchCells failed'))
     },
     /**
      * Changes the 'isAlive' object property
