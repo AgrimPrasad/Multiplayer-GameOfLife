@@ -3,29 +3,30 @@
     :class="isAlive.isAlive ? 'alive' : 'dead'"
     class="cell"
     @click="reborn(true)"
-    @mouseover="reborn(isMouseDown)"/>
+    @mouseover="reborn(isMouseDown)"
+  />
 </template>
 <script>
 export default {
   props: {
     statusObj: {
       default: function() {
-        return {isAlive: false};
+        return { isAlive: false };
       },
-      type: Object,
+      type: Object
     },
     xPos: {
       default: -1,
-      type: Number,
+      type: Number
     },
     yPos: {
       default: -1,
-      type: Number,
+      type: Number
     },
     isMouseDown: {
       default: false,
-      type: Boolean,
-    },
+      type: Boolean
+    }
   },
   data() {
     return {
@@ -33,7 +34,7 @@ export default {
       // Sadly it is an anti pattern because ES2015 / Vue
       // do have some problems to deal with a 2D-Array (not-reactive).
       // If you have a different idea how to fix this create an issue :)
-      isAlive: this.statusObj,
+      isAlive: this.statusObj
     };
   },
   methods: {
@@ -48,10 +49,10 @@ export default {
     reborn: function(bool) {
       if (bool) {
         this.isAlive.isAlive = !this.isAlive.isAlive;
-        this.$emit('wasUpdated', this.isAlive.isAlive);
+        this.$emit("wasUpdated", this.isAlive.isAlive);
       }
-    },
-  },
+    }
+  }
 };
 </script>
 

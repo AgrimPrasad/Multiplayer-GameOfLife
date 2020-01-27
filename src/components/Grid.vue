@@ -5,16 +5,15 @@
       :cell-count="cellCount"
       :cells-alive="cellsAlive"
       :cells-created="cellsCreated"
-      :current-speed="currentSpeed"/>
+      :current-speed="currentSpeed"
+    />
     <div
       class="game-grid columns"
       @mousedown="isMouseDown = true"
       @mouseup="isMouseDown = false"
-      @mouseleave="isMouseDown = false">
-      <div
-        v-for="(col, indexX) in gridList"
-        :key="indexX"
-        class="game-column">
+      @mouseleave="isMouseDown = false"
+    >
+      <div v-for="(col, indexX) in gridList" :key="indexX" class="game-column">
         <app-cell
           v-for="(isAlive, indexY) in col"
           :key="indexY"
@@ -30,30 +29,34 @@
 </template>
 
 <script>
-import Cell from './Cell.vue';
-import Stats from './Stats.vue';
+import Cell from "./Cell.vue";
+import Stats from "./Stats.vue";
 export default {
   components: {
-    'app-cell': Cell,
-    'app-stats': Stats,
+    "app-cell": Cell,
+    "app-stats": Stats
   },
   props: {
     message: {
-      default: '',
-      type: String,
+      default: "",
+      type: String
     },
     importToken: {
-      default: '',
-      type: String,
+      default: "",
+      type: String
     },
     currentSpeed: {
       default: 0,
-      type: Number,
+      type: Number
     },
     serverAddr: {
-      default: '',
-      type: String,
+      default: "",
+      type: String
     },
+    socket: {
+      default: {},
+      type: Object
+    }
   },
   data() {
     return {
@@ -68,7 +71,7 @@ export default {
       cellsCreated: 0,
 
       // A prop that gets used by the app-cell component (drag)
-      isMouseDown: false,
+      isMouseDown: false
     };
   },
   computed: {},
@@ -81,22 +84,26 @@ export default {
      * @param {string} val - the value
      */
     message: function(val) {
-      if (val === 'nextStep') {
+      // TODO: Remove nextStep as it's
+      // confusing and will cause race conditions
+      if (val === "nextStep") {
         this.update();
         this.currentTick++;
-      } else if (val === 'redoSession') {
+      } else if (val === "redoSession") {
         this.reset();
-      } else if (val === 'randomSeed') {
+      } else if (val === "randomSeed") {
         this.randomSeed();
-      } else if (val === 'importSession') {
+      } else if (val === "importSession") {
         this.importSession();
-      } else if (val === 'exportSession') {
+      } else if (val === "exportSession") {
         this.exportSession();
       }
-    },
+    }
   },
   created() {
     this.fetchCells();
+    this.updateFromRemote();
+    // TODO: start listening for updates immediately
   },
   methods: {
     /**
@@ -105,14 +112,20 @@ export default {
      * the website to use for most operations.
      */
     fetchCells: function() {
-      const currentGridAPI = this.serverAddr+'/api/grid/current'
+      const currentGridAPI = this.serverAddr + "/api/grid/current";
       fetch(currentGridAPI)
-      .then(stream => stream.json())
-      .then(data => {
-        this.gridList = data.grid.gridList;
-        this.cellCount = data.grid.cellCount;
-      })
-      .catch(error => console.error(error, 'fetchCells failed'))
+        .then(res => res.json())
+        .then(data => {
+          const dataErr = data.error;
+          if (dataErr) {
+            console.error(dataErr, "clickStart returned error in data");
+          } else {
+            this.gridList = data.grid.gridList;
+            this.cellCount = data.grid.cellCount;
+            this.$emit("isRunning", data.isRunning);
+          }
+        })
+        .catch(error => console.error(error, "fetchCells failed"));
     },
     /**
      * Changes the 'isAlive' object property
@@ -175,6 +188,30 @@ export default {
         }
       }
     },
+    updateFromRemote: function() {
+      this.socket.on("gridUpdate", fetchedData => {
+        // TODO: debug logs, delete later
+        console.log("gridUpdate received:", fetchedData);
+
+        if (!fetchedData || !fetchedData.grid || !fetchedData.grid.gridList) {
+          console.error(
+            "gridUpdate received invalid fetchedData:",
+            fetchedData
+          );
+        }
+
+        this.gridList = fetchedData.grid.gridList;
+        this.cellsAlive = fetchedData.grid.cellsAlive;
+        this.cellsCreated = fetchedData.grid.cellsCreated;
+        // const gridList = fetchedData.grid.gridList;
+        // set new gridList content
+        // for (let i = 0; i < this.width; i++) {
+        //   for (let j = 0; j < this.height; j++) {
+        //     this.setCell(i, j, gridList[i][j]);
+        //   }
+        // }
+      });
+    },
     /**
      * Returns the amount of neighbours for
      * a specific cell on the grid.
@@ -216,8 +253,8 @@ export default {
       this.currentTick = 0;
       this.cellsAlive = 0;
       this.cellsCreated = 0;
-      this.gridList.forEach((col) => {
-        col.forEach((cell) => {
+      this.gridList.forEach(col => {
+        col.forEach(cell => {
           cell.isAlive = false;
         });
       });
@@ -250,9 +287,9 @@ export default {
       let regex = /\[\d+,\d+\]/gm;
       let tempArr = this.importToken.match(regex);
       if (tempArr) {
-        tempArr.forEach((element) => {
+        tempArr.forEach(element => {
           element = element.substring(1, element.length - 1);
-          let xy = element.split(',');
+          let xy = element.split(",");
           this.setCell(xy[0], xy[1], true);
         });
       }
@@ -263,15 +300,15 @@ export default {
      * Same format as in importToken().
      */
     exportSession: function() {
-      let exportToken = '';
+      let exportToken = "";
       for (let i = 0; i < this.width; i++) {
         for (let j = 0; j < this.height; j++) {
           if (this.gridList[i][j].isAlive) {
-            exportToken += '[' + i + ',' + j + ']';
+            exportToken += "[" + i + "," + j + "]";
           }
         }
       }
-      this.$emit('exportToken', exportToken);
+      this.$emit("exportToken", exportToken);
     },
     /**
      * Updates the current cellcount on each new tick.
@@ -285,8 +322,8 @@ export default {
       } else {
         this.cellsAlive--;
       }
-    },
-  },
+    }
+  }
 };
 </script>
 
