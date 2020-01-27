@@ -24,7 +24,7 @@
           :y-pos="indexY"
           :user-color="userColor"
           :is-mouse-down="isMouseDown"
-          @wasUpdated="updateCellState"
+          @wasUpdated="setCell"
         />
       </div>
     </div>
@@ -105,6 +105,40 @@ export default {
     welcome(data) {
       this.userColor = data.userColor;
       this.username = data.username;
+    },
+    // Fired when the server sends something
+    // on the "userClickedGrid" channel.
+    userClickedGrid(data) {
+      const message = data.message;
+
+      if (this.username === message.user.username) {
+        return;
+      }
+
+      this.setCell(
+        message.x,
+        message.y,
+        message.user.userColor,
+        message.isAlive,
+        false
+      );
+    },
+
+    // Fired when the server sends something
+    // on the "userResetGrid" channel.
+    userResetGrid(data) {
+      const message = data.message;
+
+      if (this.username === message.user.username) {
+        return;
+      }
+
+      // reset new gridList content locally
+      for (let i = 0; i < this.width; i++) {
+        for (let j = 0; j < this.height; j++) {
+          this.setCell(i, j, "#ffffff", false, false);
+        }
+      }
     }
   },
   watch: {
@@ -169,6 +203,10 @@ export default {
      * @param {boolean} updateRemote - if true, call API to update remote state
      */
     setCell: function(x, y, color, isAlive, updateRemote) {
+      if (color == "") {
+        color = this.userColor;
+      }
+
       if (this.gridList[x][y].isAlive != isAlive) {
         this.gridList[x][y].isAlive = isAlive;
         this.gridList[x][y].color = color;
@@ -290,6 +328,13 @@ export default {
      * start value.
      */
     reset: function() {
+      // reset new gridList content locally
+      for (let i = 0; i < this.width; i++) {
+        for (let j = 0; j < this.height; j++) {
+          this.setCell(i, j, "#ffffff", false, false);
+        }
+      }
+
       const socketID = this.$socket.id;
       const resetEndpoint = this.serverAddr + "/api/grid/reset";
       this.$helpers.sendPOST(resetEndpoint, {

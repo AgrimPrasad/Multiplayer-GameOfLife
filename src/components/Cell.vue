@@ -62,15 +62,16 @@ export default {
      */
     reborn: function(bool) {
       if (bool) {
-        this.status.isAlive = !this.status.isAlive;
+        const updatedIsAlive = !this.status.isAlive;
 
-        const cellState = {
-          x: this.xPos,
-          y: this.yPos,
-          isAlive: this.status.isAlive,
-          updateRemote: true
-        };
-        this.$emit("wasUpdated", cellState);
+        this.$emit(
+          "wasUpdated",
+          this.xPos,
+          this.yPos,
+          "",
+          updatedIsAlive,
+          true
+        );
       }
     }
   }
