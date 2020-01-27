@@ -1,23 +1,32 @@
 <template>
   <div class="box">
-    <div class="columns is-fullwidth is-gapless">
-      <div class="column is-size-7-mobile is-half-mobile">
-        <strong>TICKS SINCE START: {{ currentTick }}</strong>
+    <div class="columns is-fullwidth">
+      <div class="column is-size-7-mobile is-size-6-desktop is-half-mobile">
+        <strong>TICKS: {{ currentTick }}</strong>
       </div>
-      <div class="column is-size-7-mobile is-half-mobile">
+      <div class="column is-size-7-mobile is-size-6-desktop is-half-mobile">
         <strong>CELL COUNT: {{ cellCount }}</strong>
       </div>
-      <div class="column is-size-7-mobile is-half-mobile">
+      <div class="column is-size-7-mobile is-size-6-desktop is-half-mobile">
         <strong>CELLS ALIVE: {{ cellsAlive }}</strong>
       </div>
-      <div class="column is-size-7-mobile is-half-mobile">
+      <div class="column is-size-7-mobile is-size-6-desktop is-half-mobile">
         <strong>CELLS CREATED: {{ cellsCreated }}</strong>
       </div>
-      <div class="column is-size-7-mobile is-half-mobile">
-        <strong>TICK SPEED: {{ currentSpeed }}%</strong>
+      <div class="column is-size-7-mobile is-size-6-desktop is-half-mobile">
+        <strong>SPEED: {{ currentSpeed }}%</strong>
       </div>
-      <div class="column is-size-7-mobile is-half-mobile">
-        <strong>TICK INTERVAL: {{ this.currentInterval() }}ms</strong>
+      <div class="column is-size-7-mobile is-size-6-desktop is-half-mobile">
+        <strong>INTERVAL: {{ currentInterval }}ms</strong>
+      </div>
+      <div class="column is-size-7-mobile is-size-6-desktop is-half-mobile">
+        <strong
+          >User:
+          <span>{{ username }}&nbsp;</span>
+        </strong>
+        <span :style="userColorStyle" class="icon">
+          <i class="fas fa-user" />
+        </span>
       </div>
     </div>
   </div>
@@ -45,12 +54,23 @@ export default {
     currentSpeed: {
       default: 0,
       type: Number
+    },
+    userColor: {
+      default: "",
+      type: String
+    },
+    username: {
+      default: "",
+      type: String
     }
   },
   data() {
     return {};
   },
-  methods: {
+  computed: {
+    userColorStyle: function() {
+      return "background-color: " + this.userColor + "!important";
+    },
     currentInterval: function() {
       return Math.round(100000 / this.currentSpeed);
     }
@@ -65,6 +85,9 @@ export default {
 .columns {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
 }
 .column {
   margin: 0;

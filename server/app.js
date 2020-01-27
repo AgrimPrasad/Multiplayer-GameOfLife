@@ -63,7 +63,7 @@ shared.io.sockets.on("connection", function(socket) {
   // messages.push(message);
 
   // Respond to the connecting user
-  socket.emit("Welcome", user);
+  socket.emit("welcome", user);
 
   // Broadcast to all users
   shared.io.sockets.emit("userConnected", {

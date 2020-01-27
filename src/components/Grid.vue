@@ -6,6 +6,8 @@
       :cells-alive="cellsAlive"
       :cells-created="cellsCreated"
       :current-speed="currentSpeed"
+      :user-color="userColor"
+      :username="username"
     />
     <div
       class="game-grid columns"
@@ -42,6 +44,14 @@ export default {
       type: String
     },
     importToken: {
+      default: "",
+      type: String
+    },
+    userColor: {
+      default: "",
+      type: String
+    },
+    username: {
       default: "",
       type: String
     },
@@ -87,6 +97,13 @@ export default {
     // on the "gridUpdate" channel.
     gridUpdate(data) {
       this.updateFromRemote(data);
+    },
+
+    // Fired when the server sends something
+    // on the "welcome" channel.
+    welcome(data) {
+      this.userColor = data.userColor;
+      this.username = data.username;
     }
   },
   watch: {
@@ -98,12 +115,7 @@ export default {
      * @param {string} val - the value
      */
     message: function(val) {
-      // TODO: Remove nextStep as it's
-      // confusing and will cause race conditions
-      if (val === "nextStep") {
-        this.update();
-        this.currentTick++;
-      } else if (val === "redoSession") {
+      if (val === "redoSession") {
         this.reset();
       } else if (val === "randomSeed") {
         this.randomSeed();
@@ -218,7 +230,7 @@ export default {
       this.currentSpeed = data.grid.currentSpeed;
       this.currentTick = data.grid.currentTick;
 
-      // set new gridList content
+      // set new gridList content locally
       for (let i = 0; i < this.width; i++) {
         for (let j = 0; j < this.height; j++) {
           this.setCell(i, j, data.grid.gridList[i][j].isAlive, false);
@@ -312,7 +324,7 @@ export default {
         tempArr.forEach(element => {
           element = element.substring(1, element.length - 1);
           let xy = element.split(",");
-          this.setCell(xy[0], xy[1], true);
+          this.setCell(xy[0], xy[1], true, true);
         });
       }
     },
