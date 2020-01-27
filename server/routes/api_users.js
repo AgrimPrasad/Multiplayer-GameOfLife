@@ -14,7 +14,8 @@ router.get("/list", function(req, res, next) {
         username: user.username,
         userColor: user.userColor
       };
-    })
+    }),
+    userCount: Object.keys(shared.users).length
   });
 });
 
