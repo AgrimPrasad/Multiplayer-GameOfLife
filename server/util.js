@@ -109,7 +109,6 @@ export let update = function(grid) {
       grid = setCell(i, j, tempArr[i][j], grid);
     }
   }
-  grid.gridList = tempArr;
 
   return grid;
 };

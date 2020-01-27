@@ -52,10 +52,6 @@ export default {
     serverAddr: {
       default: "",
       type: String
-    },
-    socket: {
-      default: {},
-      type: Object
     }
   },
   data() {
@@ -71,10 +67,28 @@ export default {
       cellsCreated: 0,
 
       // A prop that gets used by the app-cell component (drag)
-      isMouseDown: false
+      isMouseDown: false,
+
+      // socket variables
+      isConnected: false
     };
   },
   computed: {},
+  sockets: {
+    connect() {
+      this.isConnected = true;
+    },
+
+    disconnect() {
+      this.isConnected = false;
+    },
+
+    // Fired when the server sends something
+    // on the "gridUpdate" channel.
+    gridUpdate(data) {
+      this.updateFromRemote(data);
+    }
+  },
   watch: {
     /**
      * Watches for changes in the message prop
@@ -102,8 +116,6 @@ export default {
   },
   created() {
     this.fetchCells();
-    this.updateFromRemote();
-    // TODO: start listening for updates immediately
   },
   methods: {
     /**
@@ -188,29 +200,14 @@ export default {
         }
       }
     },
-    updateFromRemote: function() {
-      this.socket.on("gridUpdate", fetchedData => {
-        // TODO: debug logs, delete later
-        console.log("gridUpdate received:", fetchedData);
+    updateFromRemote: function(data) {
+      if (!data || !data.grid || !data.grid.gridList) {
+        console.error("updateFromRemote received invalid data:", data);
+      }
 
-        if (!fetchedData || !fetchedData.grid || !fetchedData.grid.gridList) {
-          console.error(
-            "gridUpdate received invalid fetchedData:",
-            fetchedData
-          );
-        }
-
-        this.gridList = fetchedData.grid.gridList;
-        this.cellsAlive = fetchedData.grid.cellsAlive;
-        this.cellsCreated = fetchedData.grid.cellsCreated;
-        // const gridList = fetchedData.grid.gridList;
-        // set new gridList content
-        // for (let i = 0; i < this.width; i++) {
-        //   for (let j = 0; j < this.height; j++) {
-        //     this.setCell(i, j, gridList[i][j]);
-        //   }
-        // }
-      });
+      this.gridList = data.grid.gridList;
+      this.cellsAlive = data.grid.cellsAlive;
+      this.cellsCreated = data.grid.cellsCreated;
     },
     /**
      * Returns the amount of neighbours for

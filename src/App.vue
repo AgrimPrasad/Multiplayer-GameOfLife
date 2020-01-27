@@ -72,7 +72,6 @@
                     :import-token="importToken"
                     :current-speed="speed"
                     :server-addr="serverAddr"
-                    :socket="socket"
                     @exportToken="exportSession($event)"
                     @isRunning="updateIsRunning($event)"
                   />
@@ -197,8 +196,6 @@ import io from "socket.io-client";
 
 let serverAddr = process.env.SERVER_ADDRESS || "http://localhost:3000";
 
-let socket = io.connect(serverAddr);
-
 export default {
   name: "App",
   components: {
@@ -229,9 +226,9 @@ export default {
       mainComponent: "gamePage",
       selectedScenario: "scenario",
 
-      // API Server variables
+      // server variables
       serverAddr: serverAddr,
-      socket: socket
+      isConnected: false
     };
   },
   watch: {
@@ -259,6 +256,15 @@ export default {
     }
   },
   created() {},
+  sockets: {
+    connect() {
+      this.isConnected = true;
+    },
+
+    disconnect() {
+      this.isConnected = false;
+    }
+  },
   methods: {
     /**
      * Gets called whenever a button is pressed
@@ -333,7 +339,7 @@ export default {
      * not started already
      */
     clickStart: function() {
-      const socketID = this.socket.id;
+      const socketID = this.$socket.id;
       const startAPI = this.serverAddr + `/api/grid/start`;
       const interval = 50000 / this.speed;
       fetch(startAPI, {
@@ -356,7 +362,7 @@ export default {
      * not paused already
      */
     clickPause: function() {
-      const socketID = this.socket.id;
+      const socketID = this.$socket.id;
       const pauseAPI = this.serverAddr + `/api/grid/pause`;
       fetch(pauseAPI, {
         method: "POST",
