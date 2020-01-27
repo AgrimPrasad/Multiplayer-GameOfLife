@@ -263,6 +263,24 @@ export default {
 
     disconnect() {
       this.isConnected = false;
+    },
+
+    // Fired when the server sends something
+    // on the "userStartedSimulation" channel.
+    userStartedSimulation() {
+      // message is broadcasted, so check if play message triggered by this client itself
+      if (!this.isRunning) {
+        this.delegate("play");
+      }
+    },
+
+    // Fired when the server sends something
+    // on the "userPausedSimulation" channel.
+    userPausedSimulation() {
+      // message is broadcasted, so check if pause message triggered by this client itself
+      if (this.isRunning) {
+        this.delegate("play");
+      }
     }
   },
   methods: {
