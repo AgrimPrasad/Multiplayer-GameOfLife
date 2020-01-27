@@ -78,7 +78,7 @@ The API is documented using [OpenAPI 3.0](https://swagger.io/docs/specification/
 
 ## Extension Ideas
 
-1. For scaling the server, the list of users and there associated metadata (such as username and colours) could be stored in a shared cache such as Redis. The same could be done for the global grid state. This way, each server instance becomes stateless by itself, with the actual state being stored/retrieved by each instance from Redis.
+1. For scaling the server, the list of users and there associated metadata (such as username and colours) could be stored in a shared cache such as Redis. The same could be done for the global grid state. This way, each server instance becomes stateless by itself, with the actual state being stored/retrieved by each instance from Redis. Furthermore, redis locks can be used to prevent race conditions in updates with multiple instances.
 
 1. User authentication could be implemented as an additional set of `user` endpoints. Unauthenticated users would not be able to access any grid-specific endpoints.
 
