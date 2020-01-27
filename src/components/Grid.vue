@@ -21,7 +21,7 @@
           :x-pos="indexX"
           :y-pos="indexY"
           :is-mouse-down="isMouseDown"
-          @wasUpdated="updateCellCount"
+          @wasUpdated="updateCellState"
         />
       </div>
     </div>
@@ -134,6 +134,10 @@ export default {
           } else {
             this.gridList = data.grid.gridList;
             this.cellCount = data.grid.cellCount;
+            this.cellsAlive = data.grid.cellsAlive;
+            this.cellsCreated = data.grid.cellsCreated;
+            this.currentSpeed = data.grid.currentSpeed;
+            this.currentTick = data.grid.currentTick;
             this.$emit("isRunning", data.isRunning);
           }
         })
@@ -146,12 +150,15 @@ export default {
      *
      * @param {number} x - the x position
      * @param {number} y - the y position
-     * @param {boolean} bool - the new boolean
+     * @param {boolean} isAlive - the new isAlive status
+     * @param {boolean} updateRemote - if true, call API to update remote state
      */
-    setCell: function(x, y, bool) {
-      if (this.gridList[x][y].isAlive != bool) {
-        this.gridList[x][y].isAlive = bool;
-        this.updateCellCount(bool);
+    setCell: function(x, y, isAlive, updateRemote) {
+      if (this.gridList[x][y].isAlive != isAlive) {
+        this.gridList[x][y].isAlive = isAlive;
+
+        const cellState = { x, y, isAlive, updateRemote };
+        this.updateCellState(cellState);
       }
     },
     /**
@@ -196,7 +203,7 @@ export default {
       // set new gridList content
       for (let i = 0; i < this.width; i++) {
         for (let j = 0; j < this.height; j++) {
-          this.setCell(i, j, tempArr[i][j]);
+          this.setCell(i, j, tempArr[i][j], true);
         }
       }
     },
@@ -205,9 +212,18 @@ export default {
         console.error("updateFromRemote received invalid data:", data);
       }
 
-      this.gridList = data.grid.gridList;
+      this.cellCount = data.grid.cellCount;
       this.cellsAlive = data.grid.cellsAlive;
       this.cellsCreated = data.grid.cellsCreated;
+      this.currentSpeed = data.grid.currentSpeed;
+      this.currentTick = data.grid.currentTick;
+
+      // set new gridList content
+      for (let i = 0; i < this.width; i++) {
+        for (let j = 0; j < this.height; j++) {
+          this.setCell(i, j, data.grid.gridList[i][j].isAlive, false);
+        }
+      }
     },
     /**
      * Returns the amount of neighbours for
@@ -247,14 +263,23 @@ export default {
      * start value.
      */
     reset: function() {
-      this.currentTick = 0;
-      this.cellsAlive = 0;
-      this.cellsCreated = 0;
-      this.gridList.forEach(col => {
-        col.forEach(cell => {
-          cell.isAlive = false;
-        });
-      });
+      const socketID = this.$socket.id;
+      const resetAPI = this.serverAddr + "/api/grid/reset";
+      fetch(resetAPI, {
+        method: "POST",
+        headers: new Headers({ "content-type": "application/json" }),
+        body: JSON.stringify({
+          socketID: socketID
+        })
+      })
+        .then(res => res.json())
+        .then(data => {
+          const dataErr = data.error;
+          if (dataErr) {
+            console.error(dataErr, "resetAPI returned error in data");
+          }
+        })
+        .catch(error => console.error(error, "resetAPI failed"));
     },
     /**
      * Populates and overwrites gridList with cells.
@@ -264,9 +289,9 @@ export default {
         for (let j = 0; j < this.height; j++) {
           let rand = Math.random();
           if (rand < 0.2) {
-            this.setCell(i, j, true);
+            this.setCell(i, j, true, true);
           } else {
-            this.setCell(i, j, false);
+            this.setCell(i, j, false, true);
           }
         }
       }
@@ -308,17 +333,44 @@ export default {
       this.$emit("exportToken", exportToken);
     },
     /**
-     * Updates the current cellcount on each new tick.
+     * Updates the current cellcount on client and server
      *
-     * @param {boolean} bool - boolean based on cell isAlive status
+     * @param {object} cellState - cell x, y positions and alive state
      */
-    updateCellCount: function(bool) {
-      if (bool) {
+    updateCellState: function(cellState) {
+      if (cellState.isAlive) {
         this.cellsAlive++;
         this.cellsCreated++;
       } else {
-        this.cellsAlive--;
+        if (this.cellsAlive > 0) {
+          this.cellsAlive--;
+        }
       }
+
+      if (!cellState.updateRemote) {
+        return;
+      }
+
+      const socketID = this.$socket.id;
+      const clickAPI = this.serverAddr + "/api/grid/click";
+      fetch(clickAPI, {
+        method: "POST",
+        headers: new Headers({ "content-type": "application/json" }),
+        body: JSON.stringify({
+          socketID: socketID,
+          x: cellState.x,
+          y: cellState.y,
+          isAlive: cellState.isAlive
+        })
+      })
+        .then(res => res.json())
+        .then(data => {
+          const dataErr = data.error;
+          if (dataErr) {
+            console.error(dataErr, "clickAPI returned error in data");
+          }
+        })
+        .catch(error => console.error(error, "clickAPI failed"));
     }
   }
 };

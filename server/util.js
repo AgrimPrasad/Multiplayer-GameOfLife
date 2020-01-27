@@ -1,16 +1,23 @@
+import * as shared from "./shared";
+
 /**
- * Creates a 2D-Array Grid during runtime for
+ * Init a 2D-Array Grid of cellsduring runtime for
  * the website to use for most operations.
  *
  *  @param {object} grid - grid object which is being manipulated
  */
-export let cellCalc = function(grid) {
+export let initCells = function(grid) {
   for (let i = 0; i < grid.width; i++) {
     grid.gridList[i] = [];
     for (let j = 0; j < grid.height; j++) {
       grid.gridList[i][j] = { isAlive: false };
     }
   }
+
+  grid.cellsAlive = 0;
+  grid.cellsCreated = 0;
+  grid.currentSpeed = 100;
+  grid.currentTick = 0;
 
   return grid;
 };
@@ -50,14 +57,18 @@ export let setCell = function(x, y, isAlive, grid) {
  * @param {number} cellsCreated - number of cells created so far
  */
 export let updateCellCount = function(alive, cellsAlive, cellsCreated) {
+  let updatedCellsAlive = cellsAlive;
+  let updatedCellsCreated = cellsCreated;
   if (alive) {
-    cellsAlive++;
-    cellsCreated++;
+    updatedCellsAlive++;
+    updatedCellsCreated++;
   } else {
-    cellsAlive--;
+    if (updatedCellsAlive > 0) {
+      updatedCellsAlive--;
+    }
   }
 
-  return { cellsAlive, cellsCreated };
+  return { updatedCellsAlive, updatedCellsCreated };
 };
 
 /**
@@ -104,8 +115,8 @@ export let update = function(grid) {
   }
 
   // set new gridList content and update cell counts
-  for (let i = 0; i < this.width; i++) {
-    for (let j = 0; j < this.height; j++) {
+  for (let i = 0; i < grid.width; i++) {
+    for (let j = 0; j < grid.height; j++) {
       grid = setCell(i, j, tempArr[i][j], grid);
     }
   }
@@ -146,4 +157,40 @@ export let getNeighbours = function(posX, posY, grid) {
     }
   }
   return neighbours;
+};
+
+/**
+ * Starts a new simulation,
+ * should call from timer
+ */
+export let startSimulation = function(currentSpeed) {
+  // Backup current grid and grid list
+  let backupGridList = shared.grid.gridList.map(function(arr) {
+    return arr.slice();
+  });
+
+  let backupGrid = {};
+  Object.assign(backupGrid, shared.grid);
+  backupGrid.gridList = backupGridList;
+
+  // update backup grid for latest tick
+  // and update shared grid thereafter
+  backupGrid = update(backupGrid);
+  shared.grid = backupGrid;
+  shared.grid.currentTick++;
+
+  // ensure speed set correctly
+  // shared.grid.currentSpeed = currentSpeed;
+
+  if (process.env.NODE_ENV != "production") {
+    console.log("current cellsAlive:", shared.grid.cellsAlive);
+    console.log("current cellsCreated:", shared.grid.cellsCreated);
+    console.log("current currentTick:", shared.grid.currentTick);
+    console.log("current currentSpeed:", shared.grid.currentSpeed);
+  }
+
+  // Broadcast message
+  shared.io.sockets.emit("gridUpdate", {
+    grid: shared.grid
+  });
 };

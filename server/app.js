@@ -24,7 +24,7 @@ app.set("views", "./public");
 app.set("view engine", "ejs");
 
 // Initiate Grid at server startup
-shared.grid = util.cellCalc(shared.grid);
+shared.grid = util.initCells(shared.grid);
 
 // Initiate Socket.io using the same http server
 // created above

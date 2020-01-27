@@ -2,7 +2,7 @@
   <div class="box">
     <div class="columns is-fullwidth is-gapless">
       <div class="column is-size-7-mobile is-half-mobile">
-        <strong>TICKS: {{ currentTick }}</strong>
+        <strong>TICKS SINCE START: {{ currentTick }}</strong>
       </div>
       <div class="column is-size-7-mobile is-half-mobile">
         <strong>CELL COUNT: {{ cellCount }}</strong>
@@ -28,33 +28,33 @@ export default {
   props: {
     currentTick: {
       default: 0,
-      type: Number,
+      type: Number
     },
     cellCount: {
       default: 0,
-      type: Number,
+      type: Number
     },
     cellsAlive: {
       default: 0,
-      type: Number,
+      type: Number
     },
     cellsCreated: {
       default: 0,
-      type: Number,
+      type: Number
     },
     currentSpeed: {
       default: 0,
-      type: Number,
-    },
+      type: Number
+    }
   },
   data() {
     return {};
   },
   methods: {
     currentInterval: function() {
-      return Math.round(50000 / this.currentSpeed);
+      return Math.round(100000 / this.currentSpeed);
     }
-  },
+  }
 };
 </script>
 

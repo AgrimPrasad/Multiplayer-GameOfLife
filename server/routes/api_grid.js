@@ -31,7 +31,7 @@ router.post("/start", function(req, res, next) {
   }
 
   if (!req.body.interval) {
-    return next(new Error("no interval query param defined in /start request"));
+    return next(new Error("no interval defined in body of /start request"));
   }
 
   const interval = parseInt(req.body.interval);
@@ -44,6 +44,8 @@ router.post("/start", function(req, res, next) {
     );
   }
 
+  const currentSpeed = Math.round(100000 / interval);
+
   let message = {
     messageType: "userStartedSimulation",
     timestamp: new Date(),
@@ -55,27 +57,11 @@ router.post("/start", function(req, res, next) {
   };
 
   // Start simulation
-  shared.simulationId = setInterval(function() {
-    // Backup current grid and grid list
-    let backupGridList = shared.grid.gridList.map(function(arr) {
-      return arr.slice();
-    });
-
-    let backupGrid = {};
-    Object.assign(backupGrid, shared.grid);
-    backupGrid.gridList = backupGridList;
-
-    // update backup grid for latest tick
-    // and update shared grid thereafter
-    backupGrid = util.update(backupGrid);
-    shared.grid = backupGrid;
-    shared.currentTick++;
-
-    // Broadcast message
-    shared.io.sockets.emit("gridUpdate", {
-      grid: shared.grid
-    });
-  }, interval);
+  shared.simulationId = setInterval(
+    util.startSimulation,
+    interval,
+    currentSpeed
+  );
 
   // Save message
   // messages.push(message);
@@ -138,30 +124,141 @@ router.post("/click", function(req, res, next) {
     return next(new Error("socketId not found in list of users"));
   }
 
+  const xPos = req.body.x;
+  const yPos = req.body.y;
+  const isAlive = req.body.isAlive;
+
   let message = {
     messageType: "userClickedGrid",
     timestamp: new Date(),
     user: {
       userId: res.user.userId,
-      username: res.user.username
+      username: res.user.username,
+      userColor: res.user.userColor
     },
-    x: req.query.x,
-    y: req.query.y
+    x: xPos,
+    y: yPos,
+    isAlive: isAlive
   };
 
   // Current value
-  let currentValue = shared.grid.cells[req.query.x][req.query.y];
+  //   let currentIsAlive = shared.grid.gridList[xPos][yPos].isAlive;
 
+  // TODO: call setCell
+  shared.grid = util.setCell(xPos, yPos, isAlive, shared.grid);
   // Toggle
-  shared.grid.cells[req.query.x][req.query.y] = !shared.grid.cells[req.query.x][
-    req.query.y
-  ];
+  //   shared.grid.gridList[xPos][yPos].isAlive = !currentValue;
 
   // Save message
   // messages.push(message);
 
   // Broadcast message
   shared.io.sockets.emit("userClickedGrid", {
+    message: message
+  });
+
+  res.json({
+    error: false
+  });
+});
+
+// POST request to reset grid state
+router.post("/reset", function(req, res, next) {
+  if (!res.user) {
+    return next(new Error("socketId not found in list of users"));
+  }
+
+  const simulationWasRunning = !!shared.simulationId;
+
+  //Pause simulation if running
+  if (simulationWasRunning) {
+    // Pause simulation
+    clearInterval(shared.simulationId);
+    shared.simulationId = undefined;
+  }
+
+  let message = {
+    messageType: "userResetGrid",
+    timestamp: new Date(),
+    user: {
+      userId: res.user.userId,
+      username: res.user.username,
+      userColor: res.user.userColor
+    }
+  };
+
+  shared.grid = util.initCells(shared.grid);
+
+  // Restart simulation if it was running before
+  if (simulationWasRunning) {
+    const interval = Math.round(100000 / shared.grid.currentSpeed);
+    shared.simulationId = setInterval(util.startSimulation, interval);
+  }
+
+  // Save message
+  // messages.push(message);
+
+  // Broadcast message
+  shared.io.sockets.emit("userResetGrid", {
+    message: message
+  });
+
+  res.json({
+    error: false
+  });
+});
+
+// POST request to change timer interval
+router.post("/interval", function(req, res, next) {
+  if (!res.user) {
+    return next(new Error("socketId not found in list of users"));
+  }
+
+  if (!req.body.interval) {
+    return next(new Error("no interval defined in body of /start request"));
+  }
+
+  const interval = parseInt(req.body.interval);
+  if (interval < shared.minInterval || interval > shared.maxInterval) {
+    return next(
+      new Error(
+        "invalid interval query param in /interval request:",
+        req.body.interval
+      )
+    );
+  }
+
+  const simulationWasRunning = !!shared.simulationId;
+
+  //Pause simulation if running
+  if (simulationWasRunning) {
+    // Pause simulation
+    clearInterval(shared.simulationId);
+    shared.simulationId = undefined;
+  }
+
+  let message = {
+    messageType: "userChangedInterval",
+    timestamp: new Date(),
+    user: {
+      userId: res.user.userId,
+      username: res.user.username,
+      userColor: res.user.userColor
+    },
+    interval: interval
+  };
+
+  shared.grid.currentSpeed = Math.round(100000 / interval);
+  // Restart simulation if it was running before
+  if (simulationWasRunning) {
+    shared.simulationId = setInterval(util.startSimulation, interval);
+  }
+
+  // Save message
+  // messages.push(message);
+
+  // Broadcast message
+  shared.io.sockets.emit("userChangedInterval", {
     message: message
   });
 

@@ -293,10 +293,6 @@ export default {
      */
     delegate: function(event) {
       if (event === "play") {
-        // TODO
-        // 1. send request to /start if this.isRunning was false
-        // 2. else send request to /pause if this.isRunning was true
-        // 3. toggle this.isRunning, no need to change intervals
         if (!this.isRunning) {
           this.clickStart();
         } else {
@@ -304,7 +300,6 @@ export default {
         }
 
         this.isRunning = !this.isRunning;
-        // this.restartInterval();
       } else if (event === "importSession") {
         this.isImport = true;
       } else if (event === "exportSession") {
@@ -342,14 +337,22 @@ export default {
      * is used to call the updateMessage method.
      */
     restartInterval: function() {
-      clearInterval(this.intervalID);
-      if (this.isRunning) {
-        this.intervalID = setInterval(
-          this.updateMessage,
-          50000 / this.speed, // interval in ms, min interval is 500ms
-          "nextStep"
-        );
-      }
+      const socketID = this.$socket.id;
+      const intervalAPI = this.serverAddr + `/api/grid/interval`;
+      const interval = 100000 / this.speed;
+      fetch(intervalAPI, {
+        method: "POST",
+        headers: new Headers({ "content-type": "application/json" }),
+        body: JSON.stringify({ socketID: socketID, interval: interval })
+      })
+        .then(res => res.json())
+        .then(data => {
+          const dataErr = data.error;
+          if (dataErr) {
+            console.error(dataErr, "intervalAPI returned error in data");
+          }
+        })
+        .catch(error => console.error(error, "intervalAPI failed"));
     },
     /**
      * calls the /start POST endpoint
@@ -359,7 +362,7 @@ export default {
     clickStart: function() {
       const socketID = this.$socket.id;
       const startAPI = this.serverAddr + `/api/grid/start`;
-      const interval = 50000 / this.speed;
+      const interval = 100000 / this.speed;
       fetch(startAPI, {
         method: "POST",
         headers: new Headers({ "content-type": "application/json" }),
