@@ -60,7 +60,7 @@ router.post("/start", function(req, res, next) {
   shared.simulationId = setInterval(
     util.startSimulation,
     interval,
-    currentSpeed
+    res.user.userColor
   );
 
   // Save message
@@ -96,7 +96,8 @@ router.post("/pause", function(req, res, next) {
     timestamp: new Date(),
     user: {
       userId: res.user.userId,
-      username: res.user.username
+      username: res.user.username,
+      userColor: res.user.userColor
     }
   };
 
@@ -141,13 +142,13 @@ router.post("/click", function(req, res, next) {
     isAlive: isAlive
   };
 
-  // Current value
-  //   let currentIsAlive = shared.grid.gridList[xPos][yPos].isAlive;
-
-  // TODO: call setCell
-  shared.grid = util.setCell(xPos, yPos, isAlive, shared.grid);
-  // Toggle
-  //   shared.grid.gridList[xPos][yPos].isAlive = !currentValue;
+  shared.grid = util.setCell(
+    xPos,
+    yPos,
+    isAlive,
+    res.user.userColor,
+    shared.grid
+  );
 
   // Save message
   // messages.push(message);
@@ -192,7 +193,11 @@ router.post("/reset", function(req, res, next) {
   // Restart simulation if it was running before
   if (simulationWasRunning) {
     const interval = Math.round(100000 / shared.grid.currentSpeed);
-    shared.simulationId = setInterval(util.startSimulation, interval);
+    shared.simulationId = setInterval(
+      util.startSimulation,
+      interval,
+      res.user.userColor
+    );
   }
 
   // Save message
@@ -251,7 +256,11 @@ router.post("/interval", function(req, res, next) {
   shared.grid.currentSpeed = Math.round(100000 / interval);
   // Restart simulation if it was running before
   if (simulationWasRunning) {
-    shared.simulationId = setInterval(util.startSimulation, interval);
+    shared.simulationId = setInterval(
+      util.startSimulation,
+      interval,
+      res.user.userColor
+    );
   }
 
   // Save message

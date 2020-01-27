@@ -13,7 +13,8 @@ export default {
     statusObj: {
       default: function() {
         return {
-          isAlive: false
+          isAlive: false,
+          color: "#ffffff"
         };
       },
       type: Object
@@ -27,7 +28,7 @@ export default {
       type: Number
     },
     userColor: {
-      default: "#fff",
+      default: "#ffffff",
       type: String
     },
     isMouseDown: {
@@ -44,7 +45,7 @@ export default {
   computed: {
     userColorStyle: function() {
       if (this.status.isAlive) {
-        return "background-color: " + this.userColor + "!important";
+        return "background-color: " + this.status.color + "!important";
       }
 
       return "";

@@ -4,7 +4,7 @@
  * @param {string} path - full path to call
  * @param {object} body - body object to send, will be JSON stringified before being sent
  */
-export const fetchPOST = function(path, body) {
+export const sendPOST = function(path, body) {
   fetch(path, {
     method: "POST",
     headers: new Headers({ "content-type": "application/json" }),
@@ -17,11 +17,9 @@ export const fetchPOST = function(path, body) {
         console.error(
           dataErr,
           "POST returned error in data for endpoint",
-          apiEndpoint
+          path
         );
       }
     })
-    .catch(error =>
-      console.error(error, "POST failed for endpoint", apiEndpoint)
-    );
+    .catch(error => console.error(error, "POST failed for endpoint", path));
 };

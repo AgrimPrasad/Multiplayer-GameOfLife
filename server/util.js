@@ -1,3 +1,4 @@
+import averageColour from "average-colour";
 import * as shared from "./shared";
 
 /**
@@ -12,7 +13,7 @@ export let initCells = function(grid) {
     for (let j = 0; j < grid.height; j++) {
       grid.gridList[i][j] = {
         isAlive: false,
-        color: "#fff" // default white
+        color: "#ffffff" // default white
       };
     }
   }
@@ -33,11 +34,13 @@ export let initCells = function(grid) {
  * @param {number} x - the x position
  * @param {number} y - the y position
  * @param {boolean} isAlive - the new alive status
+ * @param {string} color - color for this cell
  * @param {object} grid - grid object which is being manipulated
  */
-export let setCell = function(x, y, isAlive, grid) {
+export let setCell = function(x, y, isAlive, color, grid) {
   if (grid.gridList[x][y].isAlive != isAlive) {
     grid.gridList[x][y].isAlive = isAlive;
+    grid.gridList[x][y].color = color;
 
     let { updatedCellsAlive, updatedCellsCreated } = updateCellCount(
       isAlive,
@@ -79,48 +82,57 @@ export let updateCellCount = function(alive, cellsAlive, cellsCreated) {
  * every tick based on the game of life rules.
  *
  * @param {object} grid - grid object which is being manipulated
+ * @param {string} color - grid object which is being manipulated
  * @return {object} grid - manipulated grid object
  */
-export let update = function(grid) {
+export let update = function(grid, color) {
   let tempArr = [];
   for (let i = 0; i < grid.width; i++) {
     tempArr[i] = [];
     for (let j = 0; j < grid.height; j++) {
       let status = grid.gridList[i][j].isAlive;
+      let color = grid.gridList[i][j].color;
       let neighbours = getNeighbours(i, j, grid);
       let result = false;
       // Rule 1:
       // Any live cell with fewer than two live neighbours dies,
       // as if by under population
-      if (status && neighbours < 2) {
+      if (status && neighbours.length < 2) {
         result = false;
       }
       // Rule 2:
       // Any live cell with two or three neighbours lives on
       // to the next generation
-      if ((status && neighbours == 2) || neighbours == 3) {
+      if ((status && neighbours.length == 2) || neighbours.length == 3) {
         result = true;
       }
       // Rule 3:
       // Any live cell with more than three live neighbours dies,
       // as if by overpopulation
-      if (status && neighbours > 3) {
+      if (status && neighbours.length > 3) {
         result = false;
       }
       // Rule 4:
       // Any dead cell with exactly three live neighbours becomes
       // a live cell, as if by reproduction
-      if (!status && neighbours == 3) {
+      if (!status && neighbours.length == 3) {
         result = true;
+
+        let neighbourColours = [];
+        neighbours.forEach(neighbour => {
+          neighbourColours.push(neighbour.color);
+        });
+
+        color = averageColour(neighbourColours);
       }
-      tempArr[i][j] = result;
+      tempArr[i][j] = { result, color };
     }
   }
 
   // set new gridList content and update cell counts
   for (let i = 0; i < grid.width; i++) {
     for (let j = 0; j < grid.height; j++) {
-      grid = setCell(i, j, tempArr[i][j], grid);
+      grid = setCell(i, j, tempArr[i][j].result, tempArr[i][j].color, grid);
     }
   }
 
@@ -134,10 +146,10 @@ export let update = function(grid) {
  * @param {number} posX - the x position
  * @param {number} posY - the Y position
  * @param {array} grid - copy of the shared grid
- * @return {number} neighbours - amount of neighbours
+ * @return {array} neighbours - list of neighbours
  */
 export let getNeighbours = function(posX, posY, grid) {
-  let neighbours = 0;
+  let neighbours = [];
   if (posX <= grid.width && posY <= grid.height) {
     for (let offsetX = -1; offsetX < 2; offsetX++) {
       for (let offsetY = -1; offsetY < 2; offsetY++) {
@@ -154,7 +166,7 @@ export let getNeighbours = function(posX, posY, grid) {
           newY < grid.height &&
           grid.gridList[posX + offsetX][posY + offsetY].isAlive == true
         ) {
-          neighbours++;
+          neighbours.push(grid.gridList[posX + offsetX][posY + offsetY]);
         }
       }
     }
@@ -166,7 +178,7 @@ export let getNeighbours = function(posX, posY, grid) {
  * Starts a new simulation,
  * should call from timer
  */
-export let startSimulation = function(currentSpeed) {
+export let startSimulation = function(userColor) {
   // Backup current grid and grid list
   let backupGridList = shared.grid.gridList.map(function(arr) {
     return arr.slice();
@@ -178,12 +190,9 @@ export let startSimulation = function(currentSpeed) {
 
   // update backup grid for latest tick
   // and update shared grid thereafter
-  backupGrid = update(backupGrid);
+  backupGrid = update(backupGrid, userColor);
   shared.grid = backupGrid;
   shared.grid.currentTick++;
-
-  // ensure speed set correctly
-  // shared.grid.currentSpeed = currentSpeed;
 
   if (process.env.NODE_ENV != "production") {
     console.log("current cellsAlive:", shared.grid.cellsAlive);

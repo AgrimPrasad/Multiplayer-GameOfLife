@@ -45,7 +45,8 @@ shared.io.sockets.on("connection", function(socket) {
     socketId: socket.id,
     username: userId,
     userColor: randomColor({
-      luminosity: "light"
+      luminosity: "light",
+      hue: "random"
     })
   };
 

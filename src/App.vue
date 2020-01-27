@@ -6,7 +6,7 @@
         <nav class="navbar">
           <div class="container">
             <div class="navbar-brand">
-              <a class="navbar-item" style="color: #fff">
+              <a class="navbar-item" style="color: #ffffff">
                 <span class="icon">
                   <i class="fas fa-heartbeat" />
                 </span>
@@ -338,10 +338,10 @@ export default {
      */
     restartInterval: function() {
       const socketID = this.$socket.id;
-      const intervalAPI = this.serverAddr + `/api/grid/interval`;
+      const intervalEndpoint = this.serverAddr + `/api/grid/interval`;
       const interval = 100000 / this.speed;
 
-      this.$helpers.fetchPOST(resetEndpoint, {
+      this.$helpers.sendPOST(intervalEndpoint, {
         socketID: socketID,
         interval: interval
       });
@@ -355,7 +355,7 @@ export default {
       const socketID = this.$socket.id;
       const startEndpoint = this.serverAddr + `/api/grid/start`;
       const interval = 100000 / this.speed;
-      this.$helpers.fetchPOST(startEndpoint, {
+      this.$helpers.sendPOST(startEndpoint, {
         socketID: socketID,
         interval: interval
       });
@@ -369,7 +369,7 @@ export default {
       const socketID = this.$socket.id;
       const pauseEndpoint = this.serverAddr + `/api/grid/pause`;
 
-      this.$helpers.fetchPOST(pauseEndpoint, {
+      this.$helpers.sendPOST(pauseEndpoint, {
         socketID: socketID
       });
     },
@@ -458,7 +458,7 @@ body {
   font-family: "Avenir", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  color: #fff;
+  color: #ffffff;
 }
 
 .hero-body {
