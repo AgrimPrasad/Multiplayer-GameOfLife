@@ -6,6 +6,8 @@
       :cells-alive="cellsAlive"
       :cells-created="cellsCreated"
       :current-speed="currentSpeed"
+      :user-color="userColor"
+      :username="username"
     />
     <div
       class="game-grid columns"
@@ -15,13 +17,14 @@
     >
       <div v-for="(col, indexX) in gridList" :key="indexX" class="game-column">
         <app-cell
-          v-for="(isAlive, indexY) in col"
+          v-for="(status, indexY) in col"
           :key="indexY"
-          :status-obj="isAlive"
+          :status-obj="status"
           :x-pos="indexX"
           :y-pos="indexY"
+          :user-color="userColor"
           :is-mouse-down="isMouseDown"
-          @wasUpdated="updateCellState"
+          @wasUpdated="setCell"
         />
       </div>
     </div>
@@ -42,6 +45,14 @@ export default {
       type: String
     },
     importToken: {
+      default: "",
+      type: String
+    },
+    userColor: {
+      default: "",
+      type: String
+    },
+    username: {
       default: "",
       type: String
     },
@@ -87,6 +98,47 @@ export default {
     // on the "gridUpdate" channel.
     gridUpdate(data) {
       this.updateFromRemote(data);
+    },
+
+    // Fired when the server sends something
+    // on the "welcome" channel.
+    welcome(data) {
+      this.userColor = data.userColor;
+      this.username = data.username;
+    },
+    // Fired when the server sends something
+    // on the "userClickedGrid" channel.
+    userClickedGrid(data) {
+      const message = data.message;
+
+      if (this.username === message.user.username) {
+        return;
+      }
+
+      this.setCell(
+        message.x,
+        message.y,
+        message.user.userColor,
+        message.isAlive,
+        false
+      );
+    },
+
+    // Fired when the server sends something
+    // on the "userResetGrid" channel.
+    userResetGrid(data) {
+      const message = data.message;
+
+      if (this.username === message.user.username) {
+        return;
+      }
+
+      // reset new gridList content locally
+      for (let i = 0; i < this.width; i++) {
+        for (let j = 0; j < this.height; j++) {
+          this.setCell(i, j, "#ffffff", false, false);
+        }
+      }
     }
   },
   watch: {
@@ -98,12 +150,7 @@ export default {
      * @param {string} val - the value
      */
     message: function(val) {
-      // TODO: Remove nextStep as it's
-      // confusing and will cause race conditions
-      if (val === "nextStep") {
-        this.update();
-        this.currentTick++;
-      } else if (val === "redoSession") {
+      if (val === "redoSession") {
         this.reset();
       } else if (val === "randomSeed") {
         this.randomSeed();
@@ -124,13 +171,14 @@ export default {
      * the website to use for most operations.
      */
     fetchCells: function() {
-      const currentGridAPI = this.serverAddr + "/api/grid/current";
-      fetch(currentGridAPI)
+      const currentGridEndpoint = this.serverAddr + "/api/grid/current";
+
+      fetch(currentGridEndpoint)
         .then(res => res.json())
         .then(data => {
           const dataErr = data.error;
           if (dataErr) {
-            console.error(dataErr, "clickStart returned error in data");
+            console.error(dataErr, "fetchCells returned error in data");
           } else {
             this.gridList = data.grid.gridList;
             this.cellCount = data.grid.cellCount;
@@ -150,12 +198,18 @@ export default {
      *
      * @param {number} x - the x position
      * @param {number} y - the y position
+     * @param {string} color - the new cell color
      * @param {boolean} isAlive - the new isAlive status
      * @param {boolean} updateRemote - if true, call API to update remote state
      */
-    setCell: function(x, y, isAlive, updateRemote) {
+    setCell: function(x, y, color, isAlive, updateRemote) {
+      if (color == "") {
+        color = this.userColor;
+      }
+
       if (this.gridList[x][y].isAlive != isAlive) {
         this.gridList[x][y].isAlive = isAlive;
+        this.gridList[x][y].color = color;
 
         const cellState = { x, y, isAlive, updateRemote };
         this.updateCellState(cellState);
@@ -203,7 +257,7 @@ export default {
       // set new gridList content
       for (let i = 0; i < this.width; i++) {
         for (let j = 0; j < this.height; j++) {
-          this.setCell(i, j, tempArr[i][j], true);
+          this.setCell(i, j, this.userColor, tempArr[i][j], true);
         }
       }
     },
@@ -212,16 +266,27 @@ export default {
         console.error("updateFromRemote received invalid data:", data);
       }
 
+      if (this.gridList.length == 0) {
+        // grid not initialised yet, wait for grid creation
+        return;
+      }
+
       this.cellCount = data.grid.cellCount;
       this.cellsAlive = data.grid.cellsAlive;
       this.cellsCreated = data.grid.cellsCreated;
       this.currentSpeed = data.grid.currentSpeed;
       this.currentTick = data.grid.currentTick;
 
-      // set new gridList content
+      // set new gridList content locally
       for (let i = 0; i < this.width; i++) {
         for (let j = 0; j < this.height; j++) {
-          this.setCell(i, j, data.grid.gridList[i][j].isAlive, false);
+          this.setCell(
+            i,
+            j,
+            data.grid.gridList[i][j].color,
+            data.grid.gridList[i][j].isAlive,
+            false
+          );
         }
       }
     },
@@ -263,35 +328,31 @@ export default {
      * start value.
      */
     reset: function() {
+      // reset new gridList content locally
+      for (let i = 0; i < this.width; i++) {
+        for (let j = 0; j < this.height; j++) {
+          this.setCell(i, j, "#ffffff", false, false);
+        }
+      }
+
       const socketID = this.$socket.id;
-      const resetAPI = this.serverAddr + "/api/grid/reset";
-      fetch(resetAPI, {
-        method: "POST",
-        headers: new Headers({ "content-type": "application/json" }),
-        body: JSON.stringify({
-          socketID: socketID
-        })
-      })
-        .then(res => res.json())
-        .then(data => {
-          const dataErr = data.error;
-          if (dataErr) {
-            console.error(dataErr, "resetAPI returned error in data");
-          }
-        })
-        .catch(error => console.error(error, "resetAPI failed"));
+      const resetEndpoint = this.serverAddr + "/api/grid/reset";
+      this.$helpers.sendPOST(resetEndpoint, {
+        socketID: socketID
+      });
     },
     /**
      * Populates and overwrites gridList with cells.
      */
     randomSeed: function() {
+      this.reset();
       for (let i = 0; i < this.width; i++) {
         for (let j = 0; j < this.height; j++) {
           let rand = Math.random();
           if (rand < 0.2) {
-            this.setCell(i, j, true, true);
+            this.setCell(i, j, this.userColor, true, true);
           } else {
-            this.setCell(i, j, false, true);
+            this.setCell(i, j, this.userColor, false, true);
           }
         }
       }
@@ -312,7 +373,7 @@ export default {
         tempArr.forEach(element => {
           element = element.substring(1, element.length - 1);
           let xy = element.split(",");
-          this.setCell(xy[0], xy[1], true);
+          this.setCell(xy[0], xy[1], this.userColor, true, true);
         });
       }
     },
@@ -352,25 +413,13 @@ export default {
       }
 
       const socketID = this.$socket.id;
-      const clickAPI = this.serverAddr + "/api/grid/click";
-      fetch(clickAPI, {
-        method: "POST",
-        headers: new Headers({ "content-type": "application/json" }),
-        body: JSON.stringify({
-          socketID: socketID,
-          x: cellState.x,
-          y: cellState.y,
-          isAlive: cellState.isAlive
-        })
-      })
-        .then(res => res.json())
-        .then(data => {
-          const dataErr = data.error;
-          if (dataErr) {
-            console.error(dataErr, "clickAPI returned error in data");
-          }
-        })
-        .catch(error => console.error(error, "clickAPI failed"));
+      const clickEndpoint = this.serverAddr + "/api/grid/click";
+      this.$helpers.sendPOST(clickEndpoint, {
+        socketID: socketID,
+        x: cellState.x,
+        y: cellState.y,
+        isAlive: cellState.isAlive
+      });
     }
   }
 };

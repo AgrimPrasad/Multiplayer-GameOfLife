@@ -6,7 +6,7 @@
         <nav class="navbar">
           <div class="container">
             <div class="navbar-brand">
-              <a class="navbar-item" style="color: #fff">
+              <a class="navbar-item" style="color: #ffffff">
                 <span class="icon">
                   <i class="fas fa-heartbeat" />
                 </span>
@@ -338,21 +338,13 @@ export default {
      */
     restartInterval: function() {
       const socketID = this.$socket.id;
-      const intervalAPI = this.serverAddr + `/api/grid/interval`;
+      const intervalEndpoint = this.serverAddr + `/api/grid/interval`;
       const interval = 100000 / this.speed;
-      fetch(intervalAPI, {
-        method: "POST",
-        headers: new Headers({ "content-type": "application/json" }),
-        body: JSON.stringify({ socketID: socketID, interval: interval })
-      })
-        .then(res => res.json())
-        .then(data => {
-          const dataErr = data.error;
-          if (dataErr) {
-            console.error(dataErr, "intervalAPI returned error in data");
-          }
-        })
-        .catch(error => console.error(error, "intervalAPI failed"));
+
+      this.$helpers.sendPOST(intervalEndpoint, {
+        socketID: socketID,
+        interval: interval
+      });
     },
     /**
      * calls the /start POST endpoint
@@ -361,21 +353,12 @@ export default {
      */
     clickStart: function() {
       const socketID = this.$socket.id;
-      const startAPI = this.serverAddr + `/api/grid/start`;
+      const startEndpoint = this.serverAddr + `/api/grid/start`;
       const interval = 100000 / this.speed;
-      fetch(startAPI, {
-        method: "POST",
-        headers: new Headers({ "content-type": "application/json" }),
-        body: JSON.stringify({ socketID: socketID, interval: interval })
-      })
-        .then(res => res.json())
-        .then(data => {
-          const dataErr = data.error;
-          if (dataErr) {
-            console.error(dataErr, "clickStart returned error in data");
-          }
-        })
-        .catch(error => console.error(error, "clickStart failed"));
+      this.$helpers.sendPOST(startEndpoint, {
+        socketID: socketID,
+        interval: interval
+      });
     },
     /**
      * calls the /pause POST endpoint
@@ -384,20 +367,11 @@ export default {
      */
     clickPause: function() {
       const socketID = this.$socket.id;
-      const pauseAPI = this.serverAddr + `/api/grid/pause`;
-      fetch(pauseAPI, {
-        method: "POST",
-        headers: new Headers({ "content-type": "application/json" }),
-        body: JSON.stringify({ socketID: socketID })
-      })
-        .then(res => res.json())
-        .then(data => {
-          const dataErr = data.error;
-          if (dataErr) {
-            console.error(dataErr, "clickPause returned error in data");
-          }
-        })
-        .catch(error => console.error(error, "clickPause failed"));
+      const pauseEndpoint = this.serverAddr + `/api/grid/pause`;
+
+      this.$helpers.sendPOST(pauseEndpoint, {
+        socketID: socketID
+      });
     },
     /**
      * Changes the current speed for
@@ -484,7 +458,7 @@ body {
   font-family: "Avenir", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  color: #fff;
+  color: #ffffff;
 }
 
 .hero-body {

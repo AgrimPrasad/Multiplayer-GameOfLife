@@ -44,7 +44,10 @@ shared.io.sockets.on("connection", function(socket) {
     userId: userId,
     socketId: socket.id,
     username: userId,
-    userColor: randomColor()
+    userColor: randomColor({
+      luminosity: "light",
+      hue: "random"
+    })
   };
 
   shared.users[socket.id] = user;
@@ -63,7 +66,7 @@ shared.io.sockets.on("connection", function(socket) {
   // messages.push(message);
 
   // Respond to the connecting user
-  socket.emit("Welcome", user);
+  socket.emit("welcome", user);
 
   // Broadcast to all users
   shared.io.sockets.emit("userConnected", {
