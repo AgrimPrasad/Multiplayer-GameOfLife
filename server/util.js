@@ -10,7 +10,10 @@ export let initCells = function(grid) {
   for (let i = 0; i < grid.width; i++) {
     grid.gridList[i] = [];
     for (let j = 0; j < grid.height; j++) {
-      grid.gridList[i][j] = { isAlive: false };
+      grid.gridList[i][j] = {
+        isAlive: false,
+        color: "#fff" // default white
+      };
     }
   }
 

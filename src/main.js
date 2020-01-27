@@ -7,6 +7,8 @@ import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { dom } from "@fortawesome/fontawesome-svg-core";
 import VueSocketIO from "vue-socket.io";
 
+import * as helpers from "./helpers";
+
 library.add(fas);
 library.add(fab);
 Vue.component("font-awesome-icon", FontAwesomeIcon);
@@ -28,6 +30,15 @@ Vue.use(
     connection: serverAddr
   })
 );
+
+const plugin = {
+  install() {
+    Vue.helpers = helpers;
+    Vue.prototype.$helpers = helpers;
+  }
+};
+
+Vue.use(plugin);
 
 new Vue({
   render: h => h(App)

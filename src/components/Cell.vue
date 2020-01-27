@@ -1,6 +1,7 @@
 <template>
   <div
-    :class="isAlive.isAlive ? 'alive' : 'dead'"
+    :class="status.isAlive ? 'alive' : 'dead'"
+    :style="userColorStyle"
     class="cell"
     @click="reborn(true)"
     @mouseover="reborn(isMouseDown)"
@@ -11,7 +12,9 @@ export default {
   props: {
     statusObj: {
       default: function() {
-        return { isAlive: false };
+        return {
+          isAlive: false
+        };
       },
       type: Object
     },
@@ -23,6 +26,10 @@ export default {
       default: -1,
       type: Number
     },
+    userColor: {
+      default: "#fff",
+      type: String
+    },
     isMouseDown: {
       default: false,
       type: Boolean
@@ -31,11 +38,17 @@ export default {
   data() {
     return {
       // The status for a single cell.
-      // Sadly it is an anti pattern because ES2015 / Vue
-      // do have some problems to deal with a 2D-Array (not-reactive).
-      // If you have a different idea how to fix this create an issue :)
-      isAlive: this.statusObj
+      status: this.statusObj
     };
+  },
+  computed: {
+    userColorStyle: function() {
+      if (this.status.isAlive) {
+        return "background-color: " + this.userColor + "!important";
+      }
+
+      return "";
+    }
   },
   methods: {
     /**
@@ -48,12 +61,12 @@ export default {
      */
     reborn: function(bool) {
       if (bool) {
-        this.isAlive.isAlive = !this.isAlive.isAlive;
+        this.status.isAlive = !this.status.isAlive;
 
         const cellState = {
           x: this.xPos,
           y: this.yPos,
-          isAlive: this.isAlive.isAlive,
+          isAlive: this.status.isAlive,
           updateRemote: true
         };
         this.$emit("wasUpdated", cellState);
@@ -73,9 +86,5 @@ export default {
 
 .cell:hover {
   background-color: rgba(132, 26, 26, 0.6);
-}
-
-.alive {
-  background-color: #bb4747 !important;
 }
 </style>

@@ -340,19 +340,11 @@ export default {
       const socketID = this.$socket.id;
       const intervalAPI = this.serverAddr + `/api/grid/interval`;
       const interval = 100000 / this.speed;
-      fetch(intervalAPI, {
-        method: "POST",
-        headers: new Headers({ "content-type": "application/json" }),
-        body: JSON.stringify({ socketID: socketID, interval: interval })
-      })
-        .then(res => res.json())
-        .then(data => {
-          const dataErr = data.error;
-          if (dataErr) {
-            console.error(dataErr, "intervalAPI returned error in data");
-          }
-        })
-        .catch(error => console.error(error, "intervalAPI failed"));
+
+      this.$helpers.fetchPOST(resetEndpoint, {
+        socketID: socketID,
+        interval: interval
+      });
     },
     /**
      * calls the /start POST endpoint
@@ -361,21 +353,12 @@ export default {
      */
     clickStart: function() {
       const socketID = this.$socket.id;
-      const startAPI = this.serverAddr + `/api/grid/start`;
+      const startEndpoint = this.serverAddr + `/api/grid/start`;
       const interval = 100000 / this.speed;
-      fetch(startAPI, {
-        method: "POST",
-        headers: new Headers({ "content-type": "application/json" }),
-        body: JSON.stringify({ socketID: socketID, interval: interval })
-      })
-        .then(res => res.json())
-        .then(data => {
-          const dataErr = data.error;
-          if (dataErr) {
-            console.error(dataErr, "clickStart returned error in data");
-          }
-        })
-        .catch(error => console.error(error, "clickStart failed"));
+      this.$helpers.fetchPOST(startEndpoint, {
+        socketID: socketID,
+        interval: interval
+      });
     },
     /**
      * calls the /pause POST endpoint
@@ -384,20 +367,11 @@ export default {
      */
     clickPause: function() {
       const socketID = this.$socket.id;
-      const pauseAPI = this.serverAddr + `/api/grid/pause`;
-      fetch(pauseAPI, {
-        method: "POST",
-        headers: new Headers({ "content-type": "application/json" }),
-        body: JSON.stringify({ socketID: socketID })
-      })
-        .then(res => res.json())
-        .then(data => {
-          const dataErr = data.error;
-          if (dataErr) {
-            console.error(dataErr, "clickPause returned error in data");
-          }
-        })
-        .catch(error => console.error(error, "clickPause failed"));
+      const pauseEndpoint = this.serverAddr + `/api/grid/pause`;
+
+      this.$helpers.fetchPOST(pauseEndpoint, {
+        socketID: socketID
+      });
     },
     /**
      * Changes the current speed for

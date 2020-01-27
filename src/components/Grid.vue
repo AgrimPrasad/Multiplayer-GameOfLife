@@ -22,6 +22,7 @@
           :status-obj="isAlive"
           :x-pos="indexX"
           :y-pos="indexY"
+          :user-color="userColor"
           :is-mouse-down="isMouseDown"
           @wasUpdated="updateCellState"
         />
@@ -276,22 +277,10 @@ export default {
      */
     reset: function() {
       const socketID = this.$socket.id;
-      const resetAPI = this.serverAddr + "/api/grid/reset";
-      fetch(resetAPI, {
-        method: "POST",
-        headers: new Headers({ "content-type": "application/json" }),
-        body: JSON.stringify({
-          socketID: socketID
-        })
-      })
-        .then(res => res.json())
-        .then(data => {
-          const dataErr = data.error;
-          if (dataErr) {
-            console.error(dataErr, "resetAPI returned error in data");
-          }
-        })
-        .catch(error => console.error(error, "resetAPI failed"));
+      const resetEndpoint = this.serverAddr + "/api/grid/reset";
+      this.$helpers.fetchPOST(resetEndpoint, {
+        socketID: socketID
+      });
     },
     /**
      * Populates and overwrites gridList with cells.
@@ -364,25 +353,13 @@ export default {
       }
 
       const socketID = this.$socket.id;
-      const clickAPI = this.serverAddr + "/api/grid/click";
-      fetch(clickAPI, {
-        method: "POST",
-        headers: new Headers({ "content-type": "application/json" }),
-        body: JSON.stringify({
-          socketID: socketID,
-          x: cellState.x,
-          y: cellState.y,
-          isAlive: cellState.isAlive
-        })
-      })
-        .then(res => res.json())
-        .then(data => {
-          const dataErr = data.error;
-          if (dataErr) {
-            console.error(dataErr, "clickAPI returned error in data");
-          }
-        })
-        .catch(error => console.error(error, "clickAPI failed"));
+      const clickEndpoint = this.serverAddr + "/api/grid/click";
+      this.$helpers.fetchPOST(clickEndpoint, {
+        socketID: socketID,
+        x: cellState.x,
+        y: cellState.y,
+        isAlive: cellState.isAlive
+      });
     }
   }
 };
