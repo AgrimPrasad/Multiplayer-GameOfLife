@@ -8,6 +8,7 @@
       :current-speed="currentSpeed"
       :user-color="userColor"
       :username="username"
+      :users="users"
     />
     <div
       class="game-grid columns"
@@ -55,12 +56,16 @@ export default {
     serverAddr: {
       default: "",
       type: String
+    },
+    users: {
+      default: [],
+      type: Array
     }
   },
   data() {
     return {
-      width: 46,
-      height: 20,
+      width: 0,
+      height: 0,
       gridList: [],
 
       // Stats that get passed down to the app-stats component
@@ -210,6 +215,8 @@ export default {
             this.cellsAlive = data.grid.cellsAlive;
             this.cellsCreated = data.grid.cellsCreated;
             this.currentTick = data.grid.currentTick;
+            this.width = data.grid.width;
+            this.height = data.grid.height;
 
             const deltaSpeed = data.grid.currentSpeed - this.currentSpeed;
             this.$emit("changeSpeed", deltaSpeed);

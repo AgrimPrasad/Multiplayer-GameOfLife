@@ -1,6 +1,6 @@
 <template>
   <div class="box">
-    <div class="columns is-fullwidth">
+    <div class="columns is-halfwidth">
       <div class="column is-size-7-mobile is-size-6-desktop is-half-mobile">
         <strong>TICKS: {{ currentTick }}</strong>
       </div>
@@ -13,6 +13,8 @@
       <div class="column is-size-7-mobile is-size-6-desktop is-half-mobile">
         <strong>CELLS CREATED: {{ cellsCreated }}</strong>
       </div>
+    </div>
+    <div class="columns is-halfwidth">
       <div class="column is-size-7-mobile is-size-6-desktop is-half-mobile">
         <strong>SPEED: {{ currentSpeed }}%</strong>
       </div>
@@ -28,12 +30,32 @@
           <i class="far fa-user" />
         </span>
       </div>
+      <div
+        class="column is-size-7-mobile is-size-6-desktop is-half-mobile"
+        v-if="users.length > 1"
+      >
+        <strong>Other Users: </strong>
+        <span v-for="user in users" :key="user.username">
+          <div v-if="users.length < 4 && user.username != username">
+            {{ user.username }}&nbsp;
+          </div>
+          <app-user
+            v-if="user.username != username"
+            :username="user.username"
+            :userColor="user.userColor"
+          />
+        </span>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
+import User from "./User";
 export default {
+  components: {
+    "app-user": User
+  },
   props: {
     currentTick: {
       default: 0,
@@ -62,17 +84,27 @@ export default {
     username: {
       default: "",
       type: String
+    },
+    users: {
+      default: "",
+      type: Array
     }
   },
   data() {
     return {};
   },
   computed: {
-    userColorStyle: function() {
-      return "background-color: " + this.userColor + "!important";
-    },
+    /*
+     * returns the current interval computed from the current speed
+     */
     currentInterval: function() {
       return Math.round(100000 / this.currentSpeed);
+    },
+    /*
+     * returns a style for the current user
+     */
+    userColorStyle: function() {
+      return "background-color: " + this.userColor + " !important";
     }
   }
 };

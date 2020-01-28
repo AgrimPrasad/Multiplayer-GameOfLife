@@ -4,7 +4,6 @@ import logger from "morgan";
 import cookieParser from "cookie-parser";
 import bodyParser from "body-parser";
 import shortid from "shortid";
-import randomColor from "randomcolor";
 import { chain } from "underscore";
 import cors from "cors";
 import socketIO from "socket.io";
@@ -44,10 +43,7 @@ shared.io.sockets.on("connection", function(socket) {
     userId: userId,
     socketId: socket.id,
     username: userId,
-    userColor: randomColor({
-      luminosity: "light",
-      hue: "random"
-    })
+    userColor: util.getUniqueColor()
   };
 
   shared.users[socket.id] = user;

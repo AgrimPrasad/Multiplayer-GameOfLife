@@ -29,13 +29,21 @@
               class="navbar-menu"
             >
               <div class="navbar-end">
-                <a class="navbar-item" @click="swapComponent('gamePage')">
+                <a
+                  class="navbar-item"
+                  :style="gameStyle"
+                  @click="swapComponent('gamePage')"
+                >
                   <span class="icon">
                     <i class="fas fa-gamepad" />
                   </span>
                   <span>GAME</span>
                 </a>
-                <a class="navbar-item" @click="swapComponent('infoPage')">
+                <a
+                  class="navbar-item"
+                  :style="infoStyle"
+                  @click="swapComponent('infoPage')"
+                >
                   <span class="icon">
                     <i class="fas fa-info" />
                   </span>
@@ -72,6 +80,7 @@
                     :import-token="importToken"
                     :current-speed="speed"
                     :server-addr="serverAddr"
+                    :users="users"
                     @exportToken="exportSession($event)"
                     @isRunning="updateIsRunning($event)"
                     @changeSpeed="changeSpeed($event)"
@@ -229,7 +238,10 @@ export default {
 
       // server variables
       serverAddr: serverAddr,
-      isConnected: false
+      isConnected: false,
+
+      // user variables
+      users: []
     };
   },
   watch: {
@@ -282,6 +294,38 @@ export default {
       if (this.isRunning) {
         this.delegate("play");
       }
+    },
+
+    // Fired when the server sends something
+    // on the "userConnected" channel.
+    userConnected(data) {
+      this.users = data.users;
+    },
+
+    // Fired when the server sends something
+    // on the "userDisconnected" channel.
+    userDisconnected(data) {
+      this.users = data.users;
+    }
+  },
+  computed: {
+    /*
+     * Highlight Game tab if on game page
+     */
+    gameStyle: function() {
+      if (this.mainComponent == "gamePage") {
+        return "color : #363636 !important; background-color: whitesmoke;";
+      }
+      return "";
+    },
+    /*
+     * Highlight Info tab if on info page
+     */
+    infoStyle: function() {
+      if (this.mainComponent == "infoPage") {
+        return "color: #363636 !important; background-color: whitesmoke;";
+      }
+      return "";
     }
   },
   methods: {
@@ -477,6 +521,10 @@ body {
   color: #ff9766;
 }
 
+a.navbar-item:hover {
+  background-color: gainsboro;
+}
+
 .hr {
   position: relative;
   border-top: 2px solid #414b5c;
@@ -484,7 +532,7 @@ body {
   bottom: 0;
 }
 
-// The transitions used to switch out my page components as well as
+// The transitions used to switch out page components as well as
 // the import/export modal
 .fade-enter-active,
 .fade-leave-active {
