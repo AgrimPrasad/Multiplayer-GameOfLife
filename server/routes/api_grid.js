@@ -163,6 +163,53 @@ router.post("/click", function(req, res, next) {
   });
 });
 
+// POST request to change grid state
+// when a user clicks on multiple cells on the grid
+router.post("/clicks", function(req, res, next) {
+  if (!res.user) {
+    return next(new Error("socketId not found in list of users"));
+  }
+
+  const cells = req.body.cells;
+
+  cells.forEach(cell => {
+    const xPos = cell.x;
+    const yPos = cell.y;
+    const isAlive = cell.isAlive;
+
+    shared.grid = util.setCell(
+      xPos,
+      yPos,
+      isAlive,
+      res.user.userColor,
+      shared.grid
+    );
+  });
+
+  let message = {
+    messageType: "userClickedMultiple",
+    timestamp: new Date(),
+    user: {
+      userId: res.user.userId,
+      username: res.user.username,
+      userColor: res.user.userColor
+    },
+    cells: cells
+  };
+
+  // Save message
+  // messages.push(message);
+
+  // Broadcast message
+  shared.io.sockets.emit("userClickedMultiple", {
+    message: message
+  });
+
+  res.json({
+    error: false
+  });
+});
+
 // POST request to reset grid state
 router.post("/reset", function(req, res, next) {
   if (!res.user) {
