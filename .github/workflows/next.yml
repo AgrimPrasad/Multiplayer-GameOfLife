@@ -1,0 +1,32 @@
+name: next-cd
+on:
+  push:
+    branches:
+      - next
+jobs:
+  build:
+    name: Stage Deploy
+    runs-on: ubuntu-latest
+    env:
+      STAGE_APP: stark-plains-46658
+    steps:
+      - uses: actions/checkout@v2
+
+      # Login to Heroku Container Registry
+      # HEROKU_API_TOKEN is a Github secret accessible only
+      # to Github project collaborators for use.
+      - name: login
+        uses: actions/heroku@master
+        env:
+          HEROKU_API_TOKEN: ${{ secrets.HEROKU_API_TOKEN }}
+        with:
+          args: container:login
+
+      # Release latest STAGE app using the latest
+      # STAGE container image
+      - name: release
+        uses: actions/heroku@master
+        env:
+          HEROKU_API_TOKEN: ${{ secrets.HEROKU_API_TOKEN }}
+        with:
+          args: container:release -a $STAGE_APP web
