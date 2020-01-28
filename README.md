@@ -68,7 +68,15 @@ Frontend deployment to Netlify is configured using a `netlify.toml` file present
 
 ## Local Development
 
-[TODO] ADd steps on how to set up local environment for development, testing and deployment.
+[TODO] Add steps on how to set up local environment for development, testing and deployment.
+
+1. This repo follows the [Git Flow workflow](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow) with `master` branch used for production and `next` branch used as a development branch for integration testing.
+
+1. Feature branches are branched from `next` usually, and pull requests are created towards `next`.
+
+1. A merge to `next` branch results in deployment to a `stage` environment where testing is performed before deployment to production.
+
+1. After integration testing has been performed, a pull request is opened from the `next` branch towards the `master` branch. Once this pull request is merged, the latest `master` changes are updated on production.
 
 ## Implementation Details
 
