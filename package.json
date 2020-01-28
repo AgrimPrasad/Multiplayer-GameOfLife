@@ -10,6 +10,7 @@
     "build-client": "vue-cli-service build",
     "lint-client": "vue-cli-service lint",
     "server": "nodemon -w ./server -r esm ./server/run.js",
+    "server-prod": "node -r esm ./server/run.js",
     "test": "jest",
     "test-watch": "jest --watch"
   },
@@ -23,6 +24,7 @@
     "body-parser": "^1.19.0",
     "bulma": "^0.7.5",
     "color-similarity": "0.0.1",
+    "compression": "^1.7.4",
     "cookie-parser": "^1.4.4",
     "core-js": "^2.6.5",
     "cors": "^2.8.5",

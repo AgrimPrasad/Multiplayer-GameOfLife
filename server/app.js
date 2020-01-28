@@ -3,6 +3,7 @@ import logger from "morgan";
 import cookieParser from "cookie-parser";
 import bodyParser from "body-parser";
 import cors from "cors";
+import compression from "compression";
 
 import * as shared from "./shared";
 import * as util from "./util";
@@ -12,6 +13,9 @@ let app = express();
 // enable cors as client could be on a different server
 // for a production application, domains should instead be selectively whitelisted for cors
 app.use(cors());
+
+// enable gzip compression
+app.use(compression());
 
 // A default engine is required, even though we render plain html
 app.set("views", "./public");
