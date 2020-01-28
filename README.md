@@ -66,6 +66,10 @@ Frontend deployment to Netlify is configured using a `netlify.toml` file present
 
 1. The static files are then deployed to Netlify using appropriate environment variables to configure the server address accessed by the frontend.
 
+## Local Development
+
+[TODO] ADd steps on how to set up local environment for development, testing and deployment.
+
 ## Implementation Details
 
 ### Game Logic
