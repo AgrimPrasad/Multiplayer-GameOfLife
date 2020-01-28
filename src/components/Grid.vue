@@ -8,6 +8,7 @@
       :current-speed="currentSpeed"
       :user-color="userColor"
       :username="username"
+      :users="users"
     />
     <div
       class="game-grid columns"
@@ -59,8 +60,8 @@ export default {
   },
   data() {
     return {
-      width: 46,
-      height: 20,
+      width: 0,
+      height: 0,
       gridList: [],
 
       // Stats that get passed down to the app-stats component
@@ -77,7 +78,8 @@ export default {
 
       // user variables
       userColor: "#ffffff",
-      username: ""
+      username: "",
+      users: []
     };
   },
   computed: {},
@@ -101,6 +103,18 @@ export default {
     welcome(data) {
       this.userColor = data.userColor;
       this.username = data.username;
+    },
+
+    // Fired when the server sends something
+    // on the "userConnected" channel.
+    userConnected(data) {
+      this.users = data.users;
+    },
+
+    // Fired when the server sends something
+    // on the "userDisconnected" channel.
+    userDisconnected(data) {
+      this.users = data.users;
     },
 
     // Fired when the server sends something
@@ -188,6 +202,7 @@ export default {
   },
   created() {
     this.fetchCells();
+    this.fetchUsers();
   },
   methods: {
     /**
@@ -210,11 +225,31 @@ export default {
             this.cellsAlive = data.grid.cellsAlive;
             this.cellsCreated = data.grid.cellsCreated;
             this.currentTick = data.grid.currentTick;
+            this.width = data.grid.width;
+            this.height = data.grid.height;
 
             const deltaSpeed = data.grid.currentSpeed - this.currentSpeed;
             this.$emit("changeSpeed", deltaSpeed);
 
             this.$emit("isRunning", data.isRunning);
+          }
+        })
+        .catch(error => console.error(error, "fetchCells failed"));
+    },
+    /**
+     * Fetches current list of users
+     */
+    fetchUsers: function() {
+      const listUsersEndpoint = this.serverAddr + "/api/users/list";
+
+      fetch(listUsersEndpoint)
+        .then(res => res.json())
+        .then(data => {
+          const dataErr = data.error;
+          if (dataErr) {
+            console.error(dataErr, "fetchCells returned error in data");
+          } else {
+            this.users = data.users;
           }
         })
         .catch(error => console.error(error, "fetchCells failed"));
