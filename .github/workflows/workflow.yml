@@ -49,5 +49,6 @@ jobs:
         uses: actions/heroku@master
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+          NODE_ENV: production
         with:
           args: container:release -a $STAGE_APP web
