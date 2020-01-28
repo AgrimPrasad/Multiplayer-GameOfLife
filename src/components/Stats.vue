@@ -25,7 +25,7 @@
           <span>{{ username }}&nbsp;</span>
         </strong>
         <span :style="userColorStyle" class="icon">
-          <i class="fas fa-user" />
+          <i class="far fa-user" />
         </span>
       </div>
     </div>
