@@ -48,14 +48,6 @@ export default {
       default: "",
       type: String
     },
-    userColor: {
-      default: "",
-      type: String
-    },
-    username: {
-      default: "",
-      type: String
-    },
     currentSpeed: {
       default: 0,
       type: Number
@@ -81,7 +73,11 @@ export default {
       isMouseDown: false,
 
       // socket variables
-      isConnected: false
+      isConnected: false,
+
+      // user variables
+      userColor: "#ffffff",
+      username: ""
     };
   },
   computed: {},
@@ -106,6 +102,7 @@ export default {
       this.userColor = data.userColor;
       this.username = data.username;
     },
+
     // Fired when the server sends something
     // on the "userClickedGrid" channel.
     userClickedGrid(data) {
@@ -139,6 +136,22 @@ export default {
           this.setCell(i, j, "#ffffff", false, false);
         }
       }
+    },
+
+    // Fired when the server sends something
+    // on the "userChangedInterval" channel.
+    userChangedInterval(data) {
+      const message = data.message;
+
+      if (this.username === message.user.username) {
+        return;
+      }
+
+      const newSpeed = Math.round(100000 / message.interval);
+      const deltaSpeed = newSpeed - this.currentSpeed;
+
+      // change current speed locally
+      this.$emit("changeSpeed", deltaSpeed);
     }
   },
   watch: {
@@ -184,8 +197,11 @@ export default {
             this.cellCount = data.grid.cellCount;
             this.cellsAlive = data.grid.cellsAlive;
             this.cellsCreated = data.grid.cellsCreated;
-            this.currentSpeed = data.grid.currentSpeed;
             this.currentTick = data.grid.currentTick;
+
+            const deltaSpeed = data.grid.currentSpeed - this.currentSpeed;
+            this.$emit("changeSpeed", deltaSpeed);
+
             this.$emit("isRunning", data.isRunning);
           }
         })
@@ -274,8 +290,10 @@ export default {
       this.cellCount = data.grid.cellCount;
       this.cellsAlive = data.grid.cellsAlive;
       this.cellsCreated = data.grid.cellsCreated;
-      this.currentSpeed = data.grid.currentSpeed;
       this.currentTick = data.grid.currentTick;
+
+      const deltaSpeed = data.grid.currentSpeed - this.currentSpeed;
+      this.$emit("changeSpeed", deltaSpeed);
 
       // set new gridList content locally
       for (let i = 0; i < this.width; i++) {
@@ -358,15 +376,16 @@ export default {
       }
     },
     /**
-     * Resets and then imports new cells into the gridList
-     * based on the importToken prop that gets passed down
-     * App.vue.
+     * Imports new cells into the gridList
+     * without resetting the existing grid
+     * based on the importToken prop
+     * that gets passed down from App.vue.
+     * Existing grid is NOT reset.
      * The importToken is a string and its syntax looks
      * like this:
      * '[xPos,yPos],[xPos,yPos]...'.
      */
     importSession: function() {
-      this.reset();
       let regex = /\[\d+,\d+\]/gm;
       let tempArr = this.importToken.match(regex);
       if (tempArr) {
