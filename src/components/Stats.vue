@@ -30,13 +30,15 @@
       </div>
       <div class="column is-size-7" v-if="users.length > 1">
         <strong>Other Users: </strong>
-        <span v-for="user in users" :key="user.username">
-          <app-user
-            v-if="user.username != username"
-            :username="user.username"
-            :userColor="user.userColor"
-          />
-        </span>
+        <div>
+          <span v-for="user in users" :key="user.username">
+            <app-user
+              v-if="user.username != username"
+              :username="user.username"
+              :userColor="user.userColor"
+            />
+          </span>
+        </div>
       </div>
     </div>
   </div>
