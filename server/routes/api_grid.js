@@ -5,6 +5,9 @@ import * as util from "../util";
 
 let router = Router();
 
+// GET request to get the current state of the grid
+// i.e. state of all cells, as well as whether
+// the simulation is running
 router.get("/current", function(req, res, next) {
   res.json({
     error: false,
