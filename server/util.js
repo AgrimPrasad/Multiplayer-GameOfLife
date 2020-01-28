@@ -1,4 +1,5 @@
 import averageColour from "average-colour";
+import randomColor from "randomcolor";
 import * as shared from "./shared";
 
 /**
@@ -205,4 +206,32 @@ export let startSimulation = function(userColor) {
   shared.io.sockets.emit("gridUpdate", {
     grid: shared.grid
   });
+};
+
+/**
+ * Gets a unique color
+ * not assigned to any existing user
+ */
+export let getUniqueColor = function() {
+  let uniqueColorFound = false;
+  let newColor = "";
+  while (!uniqueColorFound) {
+    newColor = randomColor({
+      luminosity: "light",
+      hue: "random"
+    });
+
+    let colorExists = false;
+    for (let user of Object.values(shared.users)) {
+      if (newColor == user.userColor) {
+        console.log("newColor and existing color clash:", newColor);
+        colorExists = true;
+        break;
+      }
+    }
+
+    uniqueColorFound = !colorExists;
+  }
+
+  return newColor;
 };
