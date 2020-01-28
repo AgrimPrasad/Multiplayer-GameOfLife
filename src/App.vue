@@ -80,6 +80,7 @@
                     :import-token="importToken"
                     :current-speed="speed"
                     :server-addr="serverAddr"
+                    :users="users"
                     @exportToken="exportSession($event)"
                     @isRunning="updateIsRunning($event)"
                     @changeSpeed="changeSpeed($event)"
@@ -237,7 +238,10 @@ export default {
 
       // server variables
       serverAddr: serverAddr,
-      isConnected: false
+      isConnected: false,
+
+      // user variables
+      users: []
     };
   },
   watch: {
@@ -290,6 +294,18 @@ export default {
       if (this.isRunning) {
         this.delegate("play");
       }
+    },
+
+    // Fired when the server sends something
+    // on the "userConnected" channel.
+    userConnected(data) {
+      this.users = data.users;
+    },
+
+    // Fired when the server sends something
+    // on the "userDisconnected" channel.
+    userDisconnected(data) {
+      this.users = data.users;
     }
   },
   computed: {

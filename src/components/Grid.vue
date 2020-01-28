@@ -56,6 +56,10 @@ export default {
     serverAddr: {
       default: "",
       type: String
+    },
+    users: {
+      default: [],
+      type: Array
     }
   },
   data() {
@@ -78,8 +82,7 @@ export default {
 
       // user variables
       userColor: "#ffffff",
-      username: "",
-      users: []
+      username: ""
     };
   },
   computed: {},
@@ -103,18 +106,6 @@ export default {
     welcome(data) {
       this.userColor = data.userColor;
       this.username = data.username;
-    },
-
-    // Fired when the server sends something
-    // on the "userConnected" channel.
-    userConnected(data) {
-      this.users = data.users;
-    },
-
-    // Fired when the server sends something
-    // on the "userDisconnected" channel.
-    userDisconnected(data) {
-      this.users = data.users;
     },
 
     // Fired when the server sends something
@@ -202,7 +193,6 @@ export default {
   },
   created() {
     this.fetchCells();
-    this.fetchUsers();
   },
   methods: {
     /**
@@ -232,24 +222,6 @@ export default {
             this.$emit("changeSpeed", deltaSpeed);
 
             this.$emit("isRunning", data.isRunning);
-          }
-        })
-        .catch(error => console.error(error, "fetchCells failed"));
-    },
-    /**
-     * Fetches current list of users
-     */
-    fetchUsers: function() {
-      const listUsersEndpoint = this.serverAddr + "/api/users/list";
-
-      fetch(listUsersEndpoint)
-        .then(res => res.json())
-        .then(data => {
-          const dataErr = data.error;
-          if (dataErr) {
-            console.error(dataErr, "fetchCells returned error in data");
-          } else {
-            this.users = data.users;
           }
         })
         .catch(error => console.error(error, "fetchCells failed"));
