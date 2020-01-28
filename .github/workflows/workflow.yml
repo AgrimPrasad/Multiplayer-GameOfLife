@@ -1,0 +1,22 @@
+name: multiplayer-game-of-life
+on: [push]
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      # Checks-out your git repo under $GITHUB_WORKSPACE directory on the test VM,
+      # so your workflow can access it.
+      - uses: actions/checkout@v2
+
+      # Downloads and caches node version 10.x
+      - uses: actions/setup-node@v1
+        with:
+          node-version: "10.x"
+
+      # Installs dependencies in the local node_modules directory
+      # Note that we are running all commands relative to the ./src workingdirectory
+      - run: npm install
+
+      # Runs tests for the current version of the code
+      - run: npm test
