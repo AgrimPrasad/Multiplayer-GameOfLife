@@ -12,9 +12,9 @@
     />
     <div
       class="game-grid columns"
-      @mousedown="isMouseDown = true"
-      @mouseup="isMouseDown = false"
-      @mouseleave="isMouseDown = false"
+      @pointerdown="isPointerDown = true"
+      @pointerup="isPointerDown = false"
+      @pointerleave="isPointerDown = false"
     >
       <div v-for="(col, indexX) in gridList" :key="indexX" class="game-column">
         <app-cell
@@ -24,7 +24,7 @@
           :x-pos="indexX"
           :y-pos="indexY"
           :user-color="userColor"
-          :is-mouse-down="isMouseDown"
+          :is-pointer-down="isPointerDown"
           @wasUpdated="setCell"
         />
       </div>
@@ -75,7 +75,7 @@ export default {
       cellsCreated: 0,
 
       // A prop that gets used by the app-cell component (drag)
-      isMouseDown: false,
+      isPointerDown: false,
 
       // socket variables
       isConnected: false,
