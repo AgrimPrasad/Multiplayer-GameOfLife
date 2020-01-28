@@ -452,7 +452,6 @@ export default {
         tempArr.forEach(element => {
           element = element.substring(1, element.length - 1);
           let xy = element.split(",");
-          // this.setCell(xy[0], xy[1], this.userColor, true, true);
           cells.push({ x: xy[0], y: xy[1], isAlive: true });
         });
         this.setCells(cells, this.userColor, true);
