@@ -29,13 +29,21 @@
               class="navbar-menu"
             >
               <div class="navbar-end">
-                <a class="navbar-item" @click="swapComponent('gamePage')">
+                <a
+                  class="navbar-item"
+                  :style="gameStyle"
+                  @click="swapComponent('gamePage')"
+                >
                   <span class="icon">
                     <i class="fas fa-gamepad" />
                   </span>
                   <span>GAME</span>
                 </a>
-                <a class="navbar-item" @click="swapComponent('infoPage')">
+                <a
+                  class="navbar-item"
+                  :style="infoStyle"
+                  @click="swapComponent('infoPage')"
+                >
                   <span class="icon">
                     <i class="fas fa-info" />
                   </span>
@@ -284,6 +292,26 @@ export default {
       }
     }
   },
+  computed: {
+    /*
+     * Highlight Game tab if on game page
+     */
+    gameStyle: function() {
+      if (this.mainComponent == "gamePage") {
+        return "color : #363636 !important; background-color: whitesmoke;";
+      }
+      return "";
+    },
+    /*
+     * Highlight Info tab if on info page
+     */
+    infoStyle: function() {
+      if (this.mainComponent == "infoPage") {
+        return "color: #363636 !important; background-color: whitesmoke;";
+      }
+      return "";
+    }
+  },
   methods: {
     /**
      * Gets called whenever a button is pressed
@@ -477,6 +505,10 @@ body {
   color: #ff9766;
 }
 
+a.navbar-item:hover {
+  background-color: gainsboro;
+}
+
 .hr {
   position: relative;
   border-top: 2px solid #414b5c;
@@ -484,7 +516,7 @@ body {
   bottom: 0;
 }
 
-// The transitions used to switch out my page components as well as
+// The transitions used to switch out page components as well as
 // the import/export modal
 .fade-enter-active,
 .fade-leave-active {
