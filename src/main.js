@@ -24,7 +24,7 @@ if (process.env.NODE_ENV != "production") {
   debug = true;
 }
 
-let serverAddr = process.env.SERVER_ADDRESS || "http://localhost:3000";
+let serverAddr = process.env.VUE_APP_SERVER_ADDRESS || "http://localhost:3000";
 
 Vue.use(
   new VueSocketIO({

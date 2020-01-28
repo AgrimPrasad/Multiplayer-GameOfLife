@@ -1,27 +1,25 @@
 <template>
   <div class="box">
     <div class="columns is-halfwidth">
-      <div class="column is-size-7-mobile is-size-6-desktop is-half-mobile">
+      <div class="column is-size-7">
         <strong>TICKS: {{ currentTick }}</strong>
       </div>
-      <div class="column is-size-7-mobile is-size-6-desktop is-half-mobile">
+      <div class="column is-size-7">
         <strong>CELL COUNT: {{ cellCount }}</strong>
       </div>
-      <div class="column is-size-7-mobile is-size-6-desktop is-half-mobile">
+      <div class="column is-size-7">
         <strong>CELLS ALIVE: {{ cellsAlive }}</strong>
       </div>
-      <div class="column is-size-7-mobile is-size-6-desktop is-half-mobile">
+      <div class="column is-size-7">
         <strong>CELLS CREATED: {{ cellsCreated }}</strong>
       </div>
-    </div>
-    <div class="columns is-halfwidth">
-      <div class="column is-size-7-mobile is-size-6-desktop is-half-mobile">
+      <div class="column is-size-7">
         <strong>SPEED: {{ currentSpeed }}%</strong>
       </div>
-      <div class="column is-size-7-mobile is-size-6-desktop is-half-mobile">
+      <div class="column is-size-7">
         <strong>INTERVAL: {{ currentInterval }}ms</strong>
       </div>
-      <div class="column is-size-7-mobile is-size-6-desktop is-half-mobile">
+      <div class="column is-size-7">
         <strong
           >User:
           <span>{{ username }}&nbsp;</span>
@@ -30,15 +28,9 @@
           <i class="far fa-user" />
         </span>
       </div>
-      <div
-        class="column is-size-7-mobile is-size-6-desktop is-half-mobile"
-        v-if="users.length > 1"
-      >
+      <div class="column is-size-7" v-if="users.length > 1">
         <strong>Other Users: </strong>
         <span v-for="user in users" :key="user.username">
-          <div v-if="users.length < 4 && user.username != username">
-            {{ user.username }}&nbsp;
-          </div>
           <app-user
             v-if="user.username != username"
             :username="user.username"

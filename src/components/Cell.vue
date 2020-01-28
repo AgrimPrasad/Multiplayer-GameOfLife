@@ -4,7 +4,7 @@
     :style="userColorStyle"
     class="cell"
     @click="reborn(true)"
-    @mouseover="reborn(isMouseDown)"
+    @pointerover="reborn(isPointerDown)"
   />
 </template>
 <script>
@@ -31,7 +31,7 @@ export default {
       default: "#ffffff",
       type: String
     },
-    isMouseDown: {
+    isPointerDown: {
       default: false,
       type: Boolean
     }
@@ -58,7 +58,7 @@ export default {
      * Also emits to the grid component for the
      * drag and drop functionality.
      *
-     * @param {boolean} bool - the isMouseDown boolean
+     * @param {boolean} bool - the isPointerDown boolean
      */
     reborn: function(bool) {
       if (bool) {

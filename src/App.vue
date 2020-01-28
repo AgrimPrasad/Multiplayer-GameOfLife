@@ -204,7 +204,7 @@ import AppInfo from "./components/AppInfo.vue";
 import { setInterval, clearInterval } from "timers";
 import io from "socket.io-client";
 
-let serverAddr = process.env.SERVER_ADDRESS || "http://localhost:3000";
+let serverAddr = process.env.VUE_APP_SERVER_ADDRESS || "http://localhost:3000";
 
 export default {
   name: "App",
@@ -509,7 +509,9 @@ body {
 .hero-body {
   align-items: stretch !important;
   padding-top: 18px;
-  padding-bottom: 12px;
+  padding-bottom: 20px;
+  margin-bottom: -20px;
+  margin-top: -2px;
 }
 
 .footer {
