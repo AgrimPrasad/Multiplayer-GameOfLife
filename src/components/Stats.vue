@@ -30,11 +30,20 @@
           <i class="far fa-user" />
         </span>
       </div>
-      <div class="column is-size-7-mobile is-size-6-desktop is-half-mobile">
-        <strong>Users Online: </strong>
-        <span v-for="user in users" :key="user">
-          <div v-if="users.length < 3">{{ user.username }}&nbsp;</div>
-          <app-user :username="user.username" :userColor="user.userColor" />
+      <div
+        class="column is-size-7-mobile is-size-6-desktop is-half-mobile"
+        v-if="users.length > 1"
+      >
+        <strong>Other Users: </strong>
+        <span v-for="user in users" :key="user.username">
+          <div v-if="users.length < 4 && user.username != username">
+            {{ user.username }}&nbsp;
+          </div>
+          <app-user
+            v-if="user.username != username"
+            :username="user.username"
+            :userColor="user.userColor"
+          />
         </span>
       </div>
     </div>

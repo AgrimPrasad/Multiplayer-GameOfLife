@@ -1,5 +1,7 @@
 import averageColour from "average-colour";
 import randomColor from "randomcolor";
+import colorSimilarity from "color-similarity";
+const hexRgb = require("hex-rgb");
 import * as shared from "./shared";
 
 /**
@@ -223,8 +225,7 @@ export let getUniqueColor = function() {
 
     let colorExists = false;
     for (let user of Object.values(shared.users)) {
-      if (newColor == user.userColor) {
-        console.log("newColor and existing color clash:", newColor);
+      if (areColorsSimilar(newColor, user.userColor)) {
         colorExists = true;
         break;
       }
@@ -234,4 +235,18 @@ export let getUniqueColor = function() {
   }
 
   return newColor;
+};
+
+/**
+ * Compares two colours to see if they are similar
+ * not assigned to any existing user
+ *  @param {string} hex1 - first hex color string
+ *  @param {string} hex2 - second hex color string
+ * @return {bool} similarity - true means similar colors, false means not simiar
+ */
+let areColorsSimilar = function(hex1, hex2) {
+  const newColorRGB = hexRgb(hex1, { format: "array" });
+  const userColorRGB = hexRgb(hex2, { format: "array" });
+
+  return colorSimilarity.YUVSimilarity(newColorRGB, userColorRGB) > 0.8;
 };
