@@ -32,13 +32,39 @@ This choice was made due to socket.io being well integrated with the Node.js eco
 
 ### Tests
 
-[TODO: Add testing information]
+Tests are run using the [Jest](https://jestjs.io/) testing and mocking library, which was chosen due to it being an integrated framework for testing, mocking and asserting which works with both Vue.js and Express.js
+
+1. To run both client and server tests, run `npm run test` which will trigger `jest`.
+
+1. All test files are in the `__test__` directory. Note that currently, only a few tests have been added as smoke tests for both the client and server.
 
 ### CI/CD
 
-This example can be deployed on Heroku.
+The server is deployed on Heroku, while the client is deployed to Netlify. This ensures segregation of client and server code, while allowing us to deploy the client as a static app served with a built-in Netlify CDN.
 
-[TODO: add more deployment details, including CI/CD etc.]
+#### Continuous Integration
+
+Tests are run using GitHub Actions. The GitHub Actions steps are configured in `.github/workflows/workflow.yaml` and are used both for running tests and for deploying the backend app to Heroku.
+
+The test step runs `npm test` using the `jest` library as mentioned in the `Tests` section above.
+
+#### Backend Continuous Delivery
+
+These are the Github Actions steps defined for deploying the backend to Heroku.
+
+1. `Dockerfile` configured in the root of this repo is used to build a docker image for the server.
+
+1. [Heroku Actions](https://github.com/actions/heroku) plugin is then used to push the built server image to the Heroku Container Registry.
+
+1. The same plugin is then used to release the server image to the backend app.
+
+#### Frontend Continuous Delivery
+
+Frontend deployment to Netlify is configured using a `netlify.toml` file present at the root of this repo.
+
+1. The client app is built using `npm run build-client` which triggers the `vue-cli-service` to build a static production site.
+
+1. The static files are then deployed to Netlify using appropriate environment variables to configure the server address accessed by the frontend.
 
 ## Implementation Details
 
@@ -60,25 +86,34 @@ This example can be deployed on Heroku.
 
 1. The browser connects to a Node.js API which allows multiple clients to share the same world-view.
 
-1. Each client is assigned a unique nickname and colour. This information is saved in a browser cookie the first time a user hits the API and is retrieved from the browser cookie on subsequent visits.
+1) When a user clicks anywhere on the grid, a live cell is created at that location with the user's colour. A given cell is associated with a single colour throughout its lifetime and dead cells are coloured white.
 
-1. When a user clicks anywhere on the grid, a live cell is created at that location with the user's colour. A given cell is associated with a single colour throughout its lifetime and dead cells are coloured white.
+1) When a dead cell is revived, it is given a colour which is the mathematical average of its neighbours.
 
-1. When a dead cell is revived, it is given a colour which is the mathematical average of its neighbours.
-
-1. User connection/disconnection logic is handed off to socket.io + cookie handling of user details.
+1) User connection/disconnection logic is handed off to socket.io + cookie handling of user details.
 
 #### Server Logic
 
-1. The server-side logic is implemented as a set of REST-ful API endpoints, which provide functionality such as user management and grid state management.
+1. The server-side logic is implemented as a set of REST-ful API endpoints and socket.io pub-sub messages, which together provide functionality such as user management and grid state management.
 
-#### Server API Documentation
+1. Each client is assigned a unique nickname and colour on initial connection through socket.io
 
-The API is documented using [OpenAPI 3.0](https://swagger.io/docs/specification/about/) (previously known as Swagger) and is available at [TODO add link]
+1. The list of users is broadcast to all clients, which then display this information on the frontend in real-time.
+
+1. Events from the frontend (such as user clicks on the grid, start of simulation etc.) are all synchronised using socket.io pub-sub messages.
+
+   1. In general, the flow of messages is `client creates event` -> emits event to server -> server updates shared state if applicable (e.g. list of users or active cells) -> server broadcasts the update to all users.
+
+1. Client connection/dis-connection events are handled using socket.io's built-in functionality to detect such events. Furthermore, care is taken on the client to sync the latest grid state and user list state immediately after reconnection.
 
 ## Extension Ideas
 
-1. For scaling the server, the list of users and there associated metadata (such as username and colours) could be stored in a shared cache such as Redis. The same could be done for the global grid state. This way, each server instance becomes stateless by itself, with the actual state being stored/retrieved by each instance from Redis. Furthermore, redis locks can be used to prevent race conditions in updates with multiple instances.
+1. Document the API using [OpenAPI 3.0](https://swagger.io/docs/specification/about/) (previously known as Swagger).
+
+1. Server scaling: The list of users and there associated metadata (such as username and colours) could be stored in a shared cache such as Redis. The same could be done for the global grid state.
+
+   1. This way, each server instance becomes stateless by itself, with the actual state being stored/retrieved by each instance from Redis.
+   1. Furthermore, redis locks can be used to prevent race conditions in updates with multiple instances.
 
 1. User authentication could be implemented as an additional set of `user` endpoints. Unauthenticated users would not be able to access any grid-specific endpoints.
 

@@ -15,7 +15,6 @@ jobs:
           node-version: "10.x"
 
       # Installs dependencies in the local node_modules directory
-      # Note that we are running all commands relative to the ./src workingdirectory
       - run: npm install
 
       # Runs tests for the current version of the code
