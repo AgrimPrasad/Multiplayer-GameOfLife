@@ -48,14 +48,6 @@ export default {
       default: "",
       type: String
     },
-    userColor: {
-      default: "",
-      type: String
-    },
-    username: {
-      default: "",
-      type: String
-    },
     currentSpeed: {
       default: 0,
       type: Number
@@ -81,7 +73,11 @@ export default {
       isMouseDown: false,
 
       // socket variables
-      isConnected: false
+      isConnected: false,
+
+      // user variables
+      userColor: "#ffffff",
+      username: ""
     };
   },
   computed: {},
@@ -106,6 +102,7 @@ export default {
       this.userColor = data.userColor;
       this.username = data.username;
     },
+
     // Fired when the server sends something
     // on the "userClickedGrid" channel.
     userClickedGrid(data) {
@@ -125,6 +122,18 @@ export default {
     },
 
     // Fired when the server sends something
+    // on the "userClickedMultiple" channel.
+    userClickedMultiple(data) {
+      const message = data.message;
+
+      if (this.username === message.user.username) {
+        return;
+      }
+
+      this.setCells(message.cells, message.user.userColor, false);
+    },
+
+    // Fired when the server sends something
     // on the "userResetGrid" channel.
     userResetGrid(data) {
       const message = data.message;
@@ -139,6 +148,22 @@ export default {
           this.setCell(i, j, "#ffffff", false, false);
         }
       }
+    },
+
+    // Fired when the server sends something
+    // on the "userChangedInterval" channel.
+    userChangedInterval(data) {
+      const message = data.message;
+
+      if (this.username === message.user.username) {
+        return;
+      }
+
+      const newSpeed = Math.round(100000 / message.interval);
+      const deltaSpeed = newSpeed - this.currentSpeed;
+
+      // change current speed locally
+      this.$emit("changeSpeed", deltaSpeed);
     }
   },
   watch: {
@@ -184,12 +209,42 @@ export default {
             this.cellCount = data.grid.cellCount;
             this.cellsAlive = data.grid.cellsAlive;
             this.cellsCreated = data.grid.cellsCreated;
-            this.currentSpeed = data.grid.currentSpeed;
             this.currentTick = data.grid.currentTick;
+
+            const deltaSpeed = data.grid.currentSpeed - this.currentSpeed;
+            this.$emit("changeSpeed", deltaSpeed);
+
             this.$emit("isRunning", data.isRunning);
           }
         })
         .catch(error => console.error(error, "fetchCells failed"));
+    },
+    /**
+     * Changes the 'isAlive' object property
+     * of a set of cells to the one requested
+     * in the param.
+     *
+     * @param {array} cells - array of {x, y, isAlive} cell objects
+     * @param {string} color - the new cell color
+     * @param {boolean} updateRemote - if true, call API to update remote update of multiple cells
+     */
+    setCells(cells, color, updateRemote) {
+      cells.forEach(cell => {
+        // set each cell locally without calling remote
+        this.setCell(cell.x, cell.y, color, cell.isAlive, false);
+      });
+
+      if (!updateRemote) {
+        return;
+      }
+
+      // now bulk update cells on remote
+      const socketID = this.$socket.id;
+      const clicksEndpoint = this.serverAddr + "/api/grid/clicks";
+      this.$helpers.sendPOST(clicksEndpoint, {
+        socketID,
+        cells
+      });
     },
     /**
      * Changes the 'isAlive' object property
@@ -211,8 +266,20 @@ export default {
         this.gridList[x][y].isAlive = isAlive;
         this.gridList[x][y].color = color;
 
-        const cellState = { x, y, isAlive, updateRemote };
-        this.updateCellState(cellState);
+        this.updateCellCount(isAlive);
+
+        if (!updateRemote) {
+          return;
+        }
+
+        const socketID = this.$socket.id;
+        const clickEndpoint = this.serverAddr + "/api/grid/click";
+        this.$helpers.sendPOST(clickEndpoint, {
+          socketID,
+          x,
+          y,
+          isAlive
+        });
       }
     },
     /**
@@ -274,8 +341,10 @@ export default {
       this.cellCount = data.grid.cellCount;
       this.cellsAlive = data.grid.cellsAlive;
       this.cellsCreated = data.grid.cellsCreated;
-      this.currentSpeed = data.grid.currentSpeed;
       this.currentTick = data.grid.currentTick;
+
+      const deltaSpeed = data.grid.currentSpeed - this.currentSpeed;
+      this.$emit("changeSpeed", deltaSpeed);
 
       // set new gridList content locally
       for (let i = 0; i < this.width; i++) {
@@ -342,39 +411,50 @@ export default {
       });
     },
     /**
-     * Populates and overwrites gridList with cells.
+     * Populates and overwrites gridList with cells
      */
     randomSeed: function() {
-      this.reset();
+      let cells = [];
       for (let i = 0; i < this.width; i++) {
         for (let j = 0; j < this.height; j++) {
           let rand = Math.random();
+          let isAlive = false;
           if (rand < 0.2) {
-            this.setCell(i, j, this.userColor, true, true);
+            isAlive = true;
           } else {
-            this.setCell(i, j, this.userColor, false, true);
+            isAlive = false;
           }
+          cells.push({
+            x: i,
+            y: j,
+            isAlive: isAlive
+          });
         }
       }
+
+      this.setCells(cells, this.userColor, true);
     },
     /**
-     * Resets and then imports new cells into the gridList
-     * based on the importToken prop that gets passed down
-     * App.vue.
+     * Imports new cells into the gridList
+     * without resetting the existing grid
+     * based on the importToken prop
+     * that gets passed down from App.vue.
+     * Existing grid is NOT reset.
      * The importToken is a string and its syntax looks
      * like this:
      * '[xPos,yPos],[xPos,yPos]...'.
      */
     importSession: function() {
-      this.reset();
       let regex = /\[\d+,\d+\]/gm;
       let tempArr = this.importToken.match(regex);
       if (tempArr) {
+        let cells = [];
         tempArr.forEach(element => {
           element = element.substring(1, element.length - 1);
           let xy = element.split(",");
-          this.setCell(xy[0], xy[1], this.userColor, true, true);
+          cells.push({ x: xy[0], y: xy[1], isAlive: true });
         });
+        this.setCells(cells, this.userColor, true);
       }
     },
     /**
@@ -394,12 +474,12 @@ export default {
       this.$emit("exportToken", exportToken);
     },
     /**
-     * Updates the current cellcount on client and server
+     * Updates the current cellcount on client
      *
-     * @param {object} cellState - cell x, y positions and alive state
+     * @param {bool} isAlive - cell alive state
      */
-    updateCellState: function(cellState) {
-      if (cellState.isAlive) {
+    updateCellCount: function(isAlive) {
+      if (isAlive) {
         this.cellsAlive++;
         this.cellsCreated++;
       } else {
@@ -407,19 +487,6 @@ export default {
           this.cellsAlive--;
         }
       }
-
-      if (!cellState.updateRemote) {
-        return;
-      }
-
-      const socketID = this.$socket.id;
-      const clickEndpoint = this.serverAddr + "/api/grid/click";
-      this.$helpers.sendPOST(clickEndpoint, {
-        socketID: socketID,
-        x: cellState.x,
-        y: cellState.y,
-        isAlive: cellState.isAlive
-      });
     }
   }
 };

@@ -74,6 +74,7 @@
                     :server-addr="serverAddr"
                     @exportToken="exportSession($event)"
                     @isRunning="updateIsRunning($event)"
+                    @changeSpeed="changeSpeed($event)"
                   />
                   <app-info v-if="mainComponent == 'infoPage'" />
                 </keep-alive>
@@ -377,7 +378,7 @@ export default {
      * Changes the current speed for
      * the game.
      *
-     * @param {number} speed - the new speed
+     * @param {number} speed - the change in speed
      */
     changeSpeed: function(speed) {
       this.speed += speed;

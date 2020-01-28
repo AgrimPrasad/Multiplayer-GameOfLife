@@ -1,8 +1,8 @@
 export const io = {};
 export const users = {};
 export let simulationId = undefined;
-export const minInterval = 500; //500ms
-export const maxInterval = 5000; //5000ms
+export const minInterval = 1000; //1000ms
+export const maxInterval = 10000; //10000ms
 
 const width = 46;
 const height = 20;

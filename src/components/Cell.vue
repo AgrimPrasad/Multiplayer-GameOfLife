@@ -87,6 +87,6 @@ export default {
 }
 
 .cell:hover {
-  background-color: rgba(132, 26, 26, 0.6);
+  background-color: rgba(128, 128, 128, 0.6);
 }
 </style>
