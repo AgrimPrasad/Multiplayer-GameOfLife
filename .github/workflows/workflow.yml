@@ -23,12 +23,12 @@ jobs:
       - run: npm test
 
       # Login to Heroku Container Registry
-      # HEROKU_API_TOKEN is a Github secret accessible only
+      # HEROKU_API_KEY is a Github secret accessible only
       # to Github project collaborators for use.
       - name: login
         uses: actions/heroku@master
         env:
-          HEROKU_API_TOKEN: ${{ secrets.HEROKU_API_TOKEN }}
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
         with:
           args: container:login
 
@@ -38,7 +38,7 @@ jobs:
       - name: push
         uses: actions/heroku@master
         env:
-          HEROKU_API_TOKEN: ${{ secrets.HEROKU_API_TOKEN }}
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
         with:
           args: container:push -a $STAGE_APP web
 
@@ -48,6 +48,6 @@ jobs:
       - name: release
         uses: actions/heroku@master
         env:
-          HEROKU_API_TOKEN: ${{ secrets.HEROKU_API_TOKEN }}
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
         with:
           args: container:release -a $STAGE_APP web
