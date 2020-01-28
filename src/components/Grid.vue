@@ -58,7 +58,9 @@ export default {
       type: String
     },
     users: {
-      default: [],
+      default: function() {
+        return [];
+      },
       type: Array
     }
   },
@@ -208,6 +210,7 @@ export default {
         .then(data => {
           const dataErr = data.error;
           if (dataErr) {
+            /* eslint-disable-next-line no-console */
             console.error(dataErr, "fetchCells returned error in data");
           } else {
             this.gridList = data.grid.gridList;
@@ -224,6 +227,7 @@ export default {
             this.$emit("isRunning", data.isRunning);
           }
         })
+        /* eslint-disable-next-line no-console */
         .catch(error => console.error(error, "fetchCells failed"));
     },
     /**
@@ -289,54 +293,9 @@ export default {
         });
       }
     },
-    /**
-     * The main function that updates the grid
-     * every tick based on the game of life rules.
-     */
-    update: function() {
-      let tempArr = [];
-      for (let i = 0; i < this.width; i++) {
-        tempArr[i] = [];
-        for (let j = 0; j < this.height; j++) {
-          let status = this.gridList[i][j].isAlive;
-          let neighbours = this.getNeighbours(i, j);
-          let result = false;
-          // Rule 1:
-          // Any live cell with fewer than two live neighbours dies,
-          // as if by under population
-          if (status && neighbours < 2) {
-            result = false;
-          }
-          // Rule 2:
-          // Any live cell with two or three neighbours lives on
-          // to the next generation
-          if ((status && neighbours == 2) || neighbours == 3) {
-            result = true;
-          }
-          // Rule 3:
-          // Any live cell with more than three live neighbours dies,
-          // as if by overpopulation
-          if (status && neighbours > 3) {
-            result = false;
-          }
-          // Rule 4:
-          // Any dead cell with exactly three live neighbours becomes
-          // a live cell, as if by reproduction
-          if (!status && neighbours == 3) {
-            result = true;
-          }
-          tempArr[i][j] = result;
-        }
-      }
-      // set new gridList content
-      for (let i = 0; i < this.width; i++) {
-        for (let j = 0; j < this.height; j++) {
-          this.setCell(i, j, this.userColor, tempArr[i][j], true);
-        }
-      }
-    },
     updateFromRemote: function(data) {
       if (!data || !data.grid || !data.grid.gridList) {
+        /* eslint-disable-next-line no-console */
         console.error("updateFromRemote received invalid data:", data);
       }
 
@@ -365,39 +324,6 @@ export default {
           );
         }
       }
-    },
-    /**
-     * Returns the amount of neighbours for
-     * a specific cell on the grid.
-     *
-     * @param {number} posX - the x position
-     * @param {number} posY - the Y position
-     * @return {number} neighbours - amount of neighbours
-     */
-    getNeighbours: function(posX, posY) {
-      let neighbours = 0;
-      if (posX <= this.width && posY <= this.height) {
-        for (let offsetX = -1; offsetX < 2; offsetX++) {
-          for (let offsetY = -1; offsetY < 2; offsetY++) {
-            let newX = posX + offsetX;
-            let newY = posY + offsetY;
-            // check if offset is:
-            // on current cell, out of bounds and if isAlive
-            // for cell true
-            if (
-              (offsetX != 0 || offsetY != 0) &&
-              newX >= 0 &&
-              newX < this.width &&
-              newY >= 0 &&
-              newY < this.height &&
-              this.gridList[posX + offsetX][posY + offsetY].isAlive == true
-            ) {
-              neighbours++;
-            }
-          }
-        }
-      }
-      return neighbours;
     },
     /**
      * Resets all gridList cells back to the

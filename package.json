@@ -9,7 +9,9 @@
     "serve-client": "vue-cli-service serve",
     "build-client": "vue-cli-service build",
     "lint-client": "vue-cli-service lint",
-    "server": "nodemon -w ./server -r esm ./server/app.js"
+    "server": "nodemon -w ./server -r esm ./server/run.js",
+    "test": "jest",
+    "test-watch": "jest --watch"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.22",
@@ -36,15 +38,23 @@
     "vue-socket.io": "^3.0.7"
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.8.3",
     "@vue/cli-plugin-babel": "^3.11.0",
     "@vue/cli-plugin-eslint": "^3.11.0",
     "@vue/cli-service": "^3.11.0",
+    "@vue/test-utils": "^1.0.0-beta.31",
+    "babel-core": "^7.0.0-bridge.0",
     "babel-eslint": "^10.0.1",
+    "babel-jest": "^25.1.0",
     "eslint": "^5.16.0",
     "eslint-plugin-vue": "^5.0.0",
+    "jest": "^25.1.0",
+    "jest-fetch-mock": "^3.0.1",
     "nodemon": "^2.0.2",
     "sass": "^1.22.10",
     "sass-loader": "^7.3.1",
+    "supertest": "^4.0.2",
+    "vue-jest": "^3.0.5",
     "vue-template-compiler": "^2.6.10"
   },
   "eslintConfig": {
@@ -69,5 +79,20 @@
   "browserslist": [
     "> 1%",
     "last 2 versions"
-  ]
+  ],
+  "jest": {
+    "automock": false,
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "vue"
+    ],
+    "transform": {
+      ".*\\.(vue)$": "vue-jest",
+      "^.+\\.js$": "babel-jest"
+    },
+    "setupFiles": [
+      "./jest.setup.js"
+    ]
+  }
 }

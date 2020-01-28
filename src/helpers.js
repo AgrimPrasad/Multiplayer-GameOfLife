@@ -14,6 +14,7 @@ export const sendPOST = function(path, body) {
     .then(data => {
       const dataErr = data.error;
       if (dataErr) {
+        /* eslint-disable-next-line no-console */
         console.error(
           dataErr,
           "POST returned error in data for endpoint",
@@ -21,5 +22,6 @@ export const sendPOST = function(path, body) {
         );
       }
     })
+    /* eslint-disable-next-line no-console */
     .catch(error => console.error(error, "POST failed for endpoint", path));
 };
