@@ -4,7 +4,7 @@ let router = Router();
 
 /* eslint-disable-next-line no-unused-vars */
 router.get("/", function(req, res, next) {
-  res.sendFile("public/index.html");
+  res.sendFile("static/index.html", { root: "./server" });
 });
 
 export default router;
