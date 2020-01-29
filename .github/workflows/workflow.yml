@@ -41,14 +41,3 @@ jobs:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
         with:
           args: container:push -a $STAGE_APP web
-
-      # Release latest STAGE app using the latest
-      # STAGE container image
-      # TODO: Don't run this step on feature branches later
-      - name: release
-        uses: actions/heroku@master
-        env:
-          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-          NODE_ENV: production
-        with:
-          args: container:release -a $STAGE_APP web
