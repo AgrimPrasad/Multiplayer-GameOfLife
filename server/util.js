@@ -85,10 +85,9 @@ export let updateCellCount = function(alive, cellsAlive, cellsCreated) {
  * every tick based on the game of life rules.
  *
  * @param {object} grid - grid object which is being manipulated
- * @param {string} color - grid object which is being manipulated
  * @return {object} grid - manipulated grid object
  */
-export let update = function(grid, color) {
+export let update = function(grid) {
   let tempArr = [];
   for (let i = 0; i < grid.width; i++) {
     tempArr[i] = [];
@@ -181,7 +180,7 @@ export let getNeighbours = function(posX, posY, grid) {
  * Starts a new simulation,
  * should call from timer
  */
-export let startSimulation = function(userColor) {
+export let startSimulation = function() {
   // Backup current grid and grid list
   let backupGridList = shared.grid.gridList.map(function(arr) {
     return arr.slice();
@@ -193,16 +192,9 @@ export let startSimulation = function(userColor) {
 
   // update backup grid for latest tick
   // and update shared grid thereafter
-  backupGrid = update(backupGrid, userColor);
+  backupGrid = update(backupGrid);
   shared.grid = backupGrid;
   shared.grid.currentTick++;
-
-  if (process.env.NODE_ENV != "production") {
-    console.log("current cellsAlive:", shared.grid.cellsAlive);
-    console.log("current cellsCreated:", shared.grid.cellsCreated);
-    console.log("current currentTick:", shared.grid.currentTick);
-    console.log("current currentSpeed:", shared.grid.currentSpeed);
-  }
 
   // Broadcast message
   shared.io.sockets.emit("gridUpdate", {

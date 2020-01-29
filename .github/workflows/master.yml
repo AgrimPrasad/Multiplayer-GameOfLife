@@ -1,0 +1,43 @@
+name: master-cd
+on:
+  push:
+    branches:
+      - master
+jobs:
+  build:
+    name: Production Deploy
+    runs-on: ubuntu-latest
+    env:
+      PRODUCTION_APP: stark-lake-47409
+    steps:
+      - uses: actions/checkout@v2
+
+      # Login to Heroku Container Registry
+      # HEROKU_API_KEY is a Github secret accessible only
+      # to Github project collaborators for use.
+      - name: login
+        uses: actions/heroku@master
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        with:
+          args: container:login
+
+      # Build and push a docker image using the Dockerfile
+      # to the Heroku Container Registry
+      # using the PRODUCTION_APP docker repository
+      - name: push
+        uses: actions/heroku@master
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        with:
+          args: container:push -a $PRODUCTION_APP web
+
+      # Release latest PRODUCTION app using the latest
+      # PRODUCTION container image
+      - name: release
+        uses: actions/heroku@master
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+          NODE_ENV: production
+        with:
+          args: container:release -a $PRODUCTION_APP web

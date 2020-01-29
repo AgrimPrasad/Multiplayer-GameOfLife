@@ -201,8 +201,6 @@ import Vue from "vue";
 import Controller from "./components/Controller.vue";
 import Grid from "./components/Grid.vue";
 import AppInfo from "./components/AppInfo.vue";
-import { setInterval, clearInterval } from "timers";
-import io from "socket.io-client";
 
 let serverAddr = process.env.VUE_APP_SERVER_ADDRESS || "http://localhost:3000";
 
