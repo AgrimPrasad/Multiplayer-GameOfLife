@@ -1,3 +1,5 @@
+# Build static site and publish to the `dist` directory
+# from where these files are picked up by Netlify for deployment
 [build]
 publish = "dist"
 command = "npm install && npm run build-client"

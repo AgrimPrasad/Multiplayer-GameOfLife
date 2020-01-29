@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import bodyParser from "body-parser";
 import cors from "cors";
 import compression from "compression";
+import expressSwagger from "express-swagger-generator";
 
 import * as shared from "./shared";
 import * as util from "./util";
@@ -72,5 +73,29 @@ app.use(function(err, req, res, next) {
     message: err.message
   });
 });
+
+let swaggerHost = "localhost:3000";
+if (process.env.NODE_ENV == "development") {
+  // address for current production server
+  swaggerHost = "stark-lake-47409.herokuapp.com";
+}
+
+let swaggerOptions = {
+  swaggerDefinition: {
+    info: {
+      description: "Server API documentation for Multiplayer Game of Life",
+      title: "Multiplayer Game of Life Server",
+      version: "1.0.0"
+    },
+    host: swaggerHost,
+    basePath: "/",
+    produces: ["application/json", "application/xml"],
+    schemes: ["http", "https"]
+  },
+  basedir: __dirname, //app absolute path
+  files: ["./routes/**/*.js"] //Path to the API handler folder
+};
+
+expressSwagger(app)(swaggerOptions);
 
 export default app;
