@@ -2,6 +2,10 @@
 
 Multiplayer Conway's Game of Life implemented with Vue.js, Node.js and socket.io
 
+Client deployed at https://gameoflife.agrimprasad.com/
+
+API Server deployed at https://stark-lake-47409.herokuapp.com Check out the API docs at https://stark-lake-47409.herokuapp.com/api-docs
+
 ## Architecture
 
 This implementation has the following high-level architecture:
@@ -30,13 +34,80 @@ Node.js (Express) based server with socket.io server-side library for handling c
 
 This choice was made due to socket.io being well integrated with the Node.js ecosystem.
 
+## Development Guide
+
+### Git workflow
+
+1. This repo follows the [Git Flow](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow) workflow with `master` branch used for production and `next` branch used as a `stage` branch for integration testing.
+
+1. Feature branches are branched from `next` usually, and new pull requests should be created towards `next`.
+
+1. A merge to `next` branch results in deployment to a `stage` environment where testing is performed before deployment to production.
+
+1. After integration testing has been performed on the `stage` environment, a pull request should be opened from the `next` branch towards the `master` branch. Once this pull request is merged, the latest `master` changes are deployed to production.
+
+### Local Development
+
+1. This project uses Vue.js for the client and Express + Node.js for the server. So firstly, you need to install all these dependencies. We will assume that you are setting up this project on MacOS with Homebrew available. Please check the relevant packages' documentation for other OSes.
+
+   1. Install `node` and `npm` with `brew install node`
+
+   1. Clone this repo from GitHub with `git clone https://github.com/AgrimPrasad/Multiplayer-GameOfLife.git`.
+
+   1. Run `npm install` to install all development and runtime dependencies to the local `node_modules` directory.
+
+   1. To run the server locally, run `npm run server`. This will trigger `nodemon` to start the server locally at `http://localhost:3000` and watch the server files for any changes.
+
+   1. To run the client locally, run `npm run serve-client`. This will start a development Vue.js server and the app will be available at `http://localhost:8080/`. The client is configured to communicate with the server at `http://localhost:3000` by default.
+
+   1. To build the client locally, run `npm run build-client`, which will output the built static JS/CSS/HTML files to the `./dist` directory.
+
+### Project Organization
+
+```bash
+├── Dockerfile
+├── __tests__
+|  ├── client.js
+|  └── server.js
+├── babel.config.js
+├── jest.setup.js
+├── netlify.toml
+├── public
+|  ├── favicon.ico
+|  └── index.html
+├── server
+|  ├── app.js
+|  ├── index.js
+|  ├── routes
+|  ├── run.js
+|  ├── shared.js
+|  ├── static
+|  └── util.js
+├── src
+|  ├── App.vue
+|  ├── assets
+|  ├── components
+|  ├── helpers.js
+|  ├── main.js
+|  └── scss
+└── vue.config.js
+```
+
+1. Server code lives in the `./server` directory.
+
+1. Client code lives in the `./src` and `./public` directories. `vue.config.js` and `babel.config.js` contain some custom configuration for Vue.js.
+
+1. All test files are in the `__test__` directory. Note that currently, only a few tests have been added as smoke tests for both the client and server. `jest.setup.js` contains some custom configuration for Jest.
+
 ### Tests
 
 Tests are run using the [Jest](https://jestjs.io/) testing and mocking library, which was chosen due to it being an integrated framework for testing, mocking and asserting which works with both Vue.js and Express.js
 
 1. To run both client and server tests, run `npm run test` which will trigger `jest`.
 
-1. All test files are in the `__test__` directory. Note that currently, only a few tests have been added as smoke tests for both the client and server.
+1. If you `jest` to watch your files while you are modifying them, run `npm run test-watch`.
+
+1. To run `eslint` linting rules on client files, run `npm run lint-client`. For server files, run `npm run lint-server`. Note that files have been formatted locally using `prettier`, although there is no `prettier` based linter in the CI/CD pipeline currently.
 
 ### CI/CD
 
@@ -44,39 +115,41 @@ The server is deployed on Heroku, while the client is deployed to Netlify. This 
 
 #### Continuous Integration
 
-Tests are run using GitHub Actions. The GitHub Actions steps are configured in `.github/workflows/workflow.yaml` and are used both for running tests and for deploying the backend app to Heroku.
+CI Tests (including linting tests) are run using GitHub Actions. The GitHub Actions steps are configured in `.github/workflows/workflow.yaml` and are used both for running tests and for deploying the backend app to Heroku.
 
 The test step runs `npm test` using the `jest` library as mentioned in the `Tests` section above.
 
 #### Backend Continuous Delivery
 
-These are the Github Actions steps defined for deploying the backend to Heroku.
+Backend is deployed using GitHub Actions to Heroku. Pushing a commit to GitHub should trigger GitHub Actions to run automatically.
 
-1. `Dockerfile` configured in the root of this repo is used to build a docker image for the server.
+1. To install the `heroku` command line client locally, run `brew install heroku/brew/heroku`. Then login to heroku with `heroku login`
 
-1. [Heroku Actions](https://github.com/actions/heroku) plugin is then used to push the built server image to the Heroku Container Registry.
+1. `Dockerfile` configured in the root of this repo is used to build a docker image for the server. Build and test steps are defined in `.github/workflows/workflow.yml`. This file also pushes a new container image to the `stage` Heroku app's container registry.
 
-1. The same plugin is then used to release the server image to the backend app.
+1. [Heroku Actions](https://github.com/actions/heroku) plugin for Github Actions is then used to push the built server image to the `stage` app's Heroku Container Registry.
+
+1. The previous two steps for building, testing and pushing a new `stage` container image are defined in `.github/workflows/workflow.yml`.
+
+1. `.github/workflows/next.yml` defines the steps to release a tested container image to the `stage` app which is running on Heroku at https://stark-plains-46658.herokuapp.com These steps are only triggered on a new push to the `next` branch.
+
+1. `.github/workflows/master.yml` defines the steps to push and release a tested container image to the `production` app which is running on Heroku at https://stark-lake-47409.herokuapp.com These steps are only triggered on a new push to the `master` branch.
+
+1. `NODE_ENV` environment variable is set to `production` in the Github Actions files to trigger production builds.
+
+1. `HEROKU_API_KEY` secret is defined on the Github repo and is only accessible to repo collaborators for use. It was generated using `heroku authorizations:create` locally.
+
+1. Heroku apps for `stage` and `production` were generated using the following commands locally: `heroku create --remote staging` and `heroku create --remote production`.
 
 #### Frontend Continuous Delivery
 
 Frontend deployment to Netlify is configured using a `netlify.toml` file present at the root of this repo.
 
-1. The client app is built using `npm run build-client` which triggers the `vue-cli-service` to build a static production site.
+1. The client app is built using `npm install && npm run build-client` which triggers the `vue-cli-service` to build a static production site.
 
-1. The static files are then deployed to Netlify using appropriate environment variables to configure the server address accessed by the frontend.
+1. The static files are then deployed to Netlify using appropriate values for the `VUE_APP_SERVER_ADDRESS` environment variable to configure the server address accessed by the frontend on different environments.
 
-## Local Development
-
-[TODO] Add steps on how to set up local environment for development, testing and deployment.
-
-1. This repo follows the [Git Flow workflow](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow) with `master` branch used for production and `next` branch used as a development branch for integration testing.
-
-1. Feature branches are branched from `next` usually, and pull requests are created towards `next`.
-
-1. A merge to `next` branch results in deployment to a `stage` environment where testing is performed before deployment to production.
-
-1. After integration testing has been performed, a pull request is opened from the `next` branch towards the `master` branch. Once this pull request is merged, the latest `master` changes are updated on production.
+1. DNS is configured in Netlify to point the `next` branch deployment to `http://next.gameoflife.agrimprasad.com/` for integration testing and the `master` branch deployment to `http://gameoflife.agrimprasad.com/` for the production deployment.
 
 ## Implementation Details
 
