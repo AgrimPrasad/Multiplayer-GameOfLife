@@ -112,11 +112,23 @@ Frontend deployment to Netlify is configured using a `netlify.toml` file present
 
 1. The list of users is broadcast to all clients, which then display this information on the frontend in real-time.
 
-1. Events from the frontend (such as user clicks on the grid, start of simulation etc.) are all synchronised using socket.io pub-sub messages.
+1. Events from the frontend (such as user clicks on the grid, the start of a simulation etc.) are all synchronised using socket.io pub-sub messages.
 
-   1. In general, the flow of messages is `client creates event` -> emits event to server -> server updates shared state if applicable (e.g. list of users or active cells) -> server broadcasts the update to all users.
+   1. In general, the flow of messages is `client creates event` -> emits the event to server -> server updates shared state if applicable (e.g. a list of users or active cells) -> server broadcasts the update to all users.
 
-1. Client connection/dis-connection events are handled using socket.io's built-in functionality to detect such events. Furthermore, care is taken on the client to sync the latest grid state and user list state immediately after reconnection.
+1. Client connection/disconnection events are handled using socket.io's built-in functionality to detect such events. Furthermore, care is taken on the client to sync the latest grid state and user list state immediately after reconnection.
+
+## Limitations
+
+1. Multi-cell updates (e.g. clicking on the `Random` button or loading patterns) doesn't take effect immediately on the frontend if a simulation is running and a new update comes in. Logic could be added to block new simulation updates after such updates.
+
+1. The footer is not visible in the viewport on iPhone Safari and the user has to scroll down to view the footer. This issue is not present on common Android phones tested here and should be fixable using CSS media queries.
+
+1. The drag functionality on the cell grid is limited to mouse events currently and doesn't work on mobile. A mobile touch-friendly library such as [vue-touch](https://alligator.io/vuejs/vue-touch-events/) could be used to respond to such mobile drag events.
+
+1. Currently, the client and server code share the same `node_modules` dependencies, due to which the JS bundle on the client is quite big (almost 0.5 MB). Approaches to fix this include:
+
+   1. Using a library such as [Lerna](https://lerna.js.org/) to change this repo into a mono-repo (aka multi-package repository), with separate client and server directories using some common dependencies where applicable.
 
 ## Extension Ideas
 
