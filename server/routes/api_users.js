@@ -5,6 +5,7 @@ import * as shared from "../shared";
 
 let router = Router();
 
+/* eslint-disable-next-line no-unused-vars */
 router.get("/list", function(req, res, next) {
   res.json({
     error: false,

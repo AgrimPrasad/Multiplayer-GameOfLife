@@ -22,6 +22,7 @@ shared.io = socketIO.listen(server);
 // and announce to all users
 shared.io.sockets.on("connection", function(socket) {
   if (app.get("env") === "development") {
+    /* eslint-disable-next-line no-console */
     console.log("client connected!");
   }
 
@@ -68,6 +69,7 @@ shared.io.sockets.on("connection", function(socket) {
   // Re-connect would be a new connection
   socket.on("disconnect", function() {
     if (app.get("env") === "development") {
+      /* eslint-disable-next-line no-console */
       console.log("client disconnected!");
     }
 
@@ -101,4 +103,5 @@ shared.io.sockets.on("connection", function(socket) {
   });
 });
 
+/* eslint-disable-next-line no-console */
 console.log("Running...");

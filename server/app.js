@@ -40,6 +40,7 @@ app.use("/api/", function(req, res, next) {
 
   if (req.method === "GET") {
     if (app.get("env") === "development") {
+      /* eslint-disable-next-line no-console */
       console.log("in custom middleware, req.query:", req.query);
     }
     if (req.query.socketId != null) {
@@ -47,6 +48,7 @@ app.use("/api/", function(req, res, next) {
     }
   } else if (req.method === "POST") {
     if (app.get("env") === "development") {
+      /* eslint-disable-next-line no-console */
       console.log("in custom middleware, req.body:", req.body);
     }
     res.user = shared.users[req.body.socketID];
@@ -61,6 +63,7 @@ app.use("/api/users", require("./routes/api_users").default);
 app.use("/api/grid", require("./routes/api_grid").default);
 app.use("/api/server", require("./routes/api_server").default);
 
+/* eslint-disable-next-line no-unused-vars */
 app.use(function(err, req, res, next) {
   res.status(err.status || 500);
 

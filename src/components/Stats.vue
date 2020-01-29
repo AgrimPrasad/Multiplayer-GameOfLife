@@ -80,7 +80,9 @@ export default {
       type: String
     },
     users: {
-      default: "",
+      default: function() {
+        return [];
+      },
       type: Array
     }
   },
