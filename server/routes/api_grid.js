@@ -1,5 +1,4 @@
 import { Router } from "express";
-import shortid from "shortid";
 import * as shared from "../shared";
 import * as util from "../util";
 
@@ -8,6 +7,7 @@ let router = Router();
 // GET request to get the current state of the grid
 // i.e. state of all cells, as well as whether
 // the simulation is running
+/* eslint-disable-next-line no-unused-vars */
 router.get("/current", function(req, res, next) {
   res.json({
     error: false,
@@ -47,8 +47,6 @@ router.post("/start", function(req, res, next) {
     );
   }
 
-  const currentSpeed = Math.round(100000 / interval);
-
   let message = {
     messageType: "userStartedSimulation",
     timestamp: new Date(),
@@ -60,11 +58,7 @@ router.post("/start", function(req, res, next) {
   };
 
   // Start simulation
-  shared.simulationId = setInterval(
-    util.startSimulation,
-    interval,
-    res.user.userColor
-  );
+  shared.simulationId = setInterval(util.startSimulation, interval);
 
   // Save message
   // messages.push(message);
@@ -243,11 +237,7 @@ router.post("/reset", function(req, res, next) {
   // Restart simulation if it was running before
   if (simulationWasRunning) {
     const interval = Math.round(100000 / shared.grid.currentSpeed);
-    shared.simulationId = setInterval(
-      util.startSimulation,
-      interval,
-      res.user.userColor
-    );
+    shared.simulationId = setInterval(util.startSimulation, interval);
   }
 
   // Save message
@@ -306,11 +296,7 @@ router.post("/interval", function(req, res, next) {
   shared.grid.currentSpeed = Math.round(100000 / interval);
   // Restart simulation if it was running before
   if (simulationWasRunning) {
-    shared.simulationId = setInterval(
-      util.startSimulation,
-      interval,
-      res.user.userColor
-    );
+    shared.simulationId = setInterval(util.startSimulation, interval);
   }
 
   // Save message
