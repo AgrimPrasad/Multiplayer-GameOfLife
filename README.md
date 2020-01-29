@@ -1,10 +1,14 @@
-# Multiplayer-GameOfLife
+# Multiplayer Game Of Life
 
-Multiplayer Conway's Game of Life implemented with Vue.js, Node.js and socket.io
+Multiplayer Conway's Game of Life implemented with Vue.js, Express and socket.io
 
-Client deployed at https://gameoflife.agrimprasad.com/
+![Multiplayer Game of Life in action](in-action.gif)
 
-API Server deployed at https://stark-lake-47409.herokuapp.com Check out the API docs at https://stark-lake-47409.herokuapp.com/api-docs
+Play the game at https://gameoflife.agrimprasad.com
+
+The frontend is deployed using Netlify and communicates with the API Server on Heroku deployed at https://stark-lake-47409.herokuapp.com
+
+Check out the API docs at https://stark-lake-47409.herokuapp.com/api-docs
 
 ## Architecture
 
@@ -20,13 +24,13 @@ Vue.js was chosen for the following reasons:
 
 1. Simpler framework as compared to alternatives such as React. The core of the framework simply consists of HTML templating, component level scoped CSS and JavaScript for logic handling.
 
-1. Standard tooling: Rather than the myriad of different library options present for alternatives such as React, most implementations use `vue-router` for client-side routing and `vuex` for state management.
+1. Standard tooling: Rather than a myriad of different library options present for alternatives such as React, most implementations use `vue-router` for client-side routing and `vuex` for state management. Note that this project has been kept simple and doesn't use these routing/state-management libraries.
 
 socket.io was chosen due to the following features:
 
 1. In-built connection/disconnection logic.
 
-1. Connection resilience with transparent fallback from WebSocket to other polling techniques such as Ajax and long-polling.
+1. Connection resilience with transparent fallback from WebSocket to other polling techniques using Ajax.
 
 ### Server
 
@@ -65,13 +69,11 @@ This choice was made due to socket.io being well integrated with the Node.js eco
 ### Project Organization
 
 ```bash
-├── Dockerfile
 ├── __tests__
 |  ├── client.js
 |  └── server.js
 ├── babel.config.js
 ├── jest.setup.js
-├── netlify.toml
 ├── public
 |  ├── favicon.ico
 |  └── index.html
@@ -105,7 +107,7 @@ Tests are run using the [Jest](https://jestjs.io/) testing and mocking library, 
 
 1. To run both client and server tests, run `npm run test` which will trigger `jest`.
 
-1. If you `jest` to watch your files while you are modifying them, run `npm run test-watch`.
+1. If you want `jest` to watch your files while you are modifying them, run `npm run test-watch`.
 
 1. To run `eslint` linting rules on client files, run `npm run lint-client`. For server files, run `npm run lint-server`. Note that files have been formatted locally using `prettier`, although there is no `prettier` based linter in the CI/CD pipeline currently.
 
@@ -117,7 +119,7 @@ The server is deployed on Heroku, while the client is deployed to Netlify. This 
 
 CI Tests (including linting tests) are run using GitHub Actions. The GitHub Actions steps are configured in `.github/workflows/workflow.yaml` and are used both for running tests and for deploying the backend app to Heroku.
 
-The test step runs `npm test` using the `jest` library as mentioned in the `Tests` section above.
+The test step runs `npm test` using the `jest` library as mentioned in the `Tests` section above. Server and client Linting is also performed here using `eslint`.
 
 #### Backend Continuous Delivery
 
@@ -149,7 +151,7 @@ Frontend deployment to Netlify is configured using a `netlify.toml` file present
 
 1. The static files are then deployed to Netlify using appropriate values for the `VUE_APP_SERVER_ADDRESS` environment variable to configure the server address accessed by the frontend on different environments.
 
-1. DNS is configured in Netlify to point the `next` branch deployment to `http://next.gameoflife.agrimprasad.com/` for integration testing and the `master` branch deployment to `http://gameoflife.agrimprasad.com/` for the production deployment.
+1. DNS is configured in Netlify to point the `next` branch deployment to `https://next.gameoflife.agrimprasad.com/` for `stage` testing and the `master` branch deployment to `https://gameoflife.agrimprasad.com/` for the production deployment.
 
 ## Implementation Details
 
@@ -167,19 +169,21 @@ Frontend deployment to Netlify is configured using a `netlify.toml` file present
 
 #### Client Logic
 
-1. The game is implemented in ticks of 1-second interval. Every second, the state of the entire grid is re-evaluated based on new inputs received from different clients.
+1. The game is implemented in ticks of 1-second interval. Every second, the state of the entire grid is re-evaluated based on new inputs received from different clients using socket.io
 
-1. The browser connects to a Node.js API which allows multiple clients to share the same world-view.
+1. The browser connects to an Express API server which allows multiple clients to share the same world-view.
 
-1) When a user clicks anywhere on the grid, a live cell is created at that location with the user's colour. A given cell is associated with a single colour throughout its lifetime and dead cells are coloured white.
+1. When a user clicks anywhere on the grid, a live cell is created at that location with the user's colour. A given cell is associated with a single colour throughout its lifetime and dead cells are coloured white.
 
-1) When a dead cell is revived, it is given a colour which is the mathematical average of its neighbours.
+1. When a dead cell is revived, it is given a colour which is the mathematical average of its neighbours.
 
-1) User connection/disconnection logic is handed off to socket.io + cookie handling of user details.
+1. User connection/disconnection logic is handed off to socket.io
 
 #### Server Logic
 
-1. The server-side logic is implemented as a set of REST-ful API endpoints and socket.io pub-sub messages, which together provide functionality such as user management and grid state management.
+1. The server API docs are available at https://stark-lake-47409.herokuapp.com/api-docs
+
+1. The server-side logic is implemented using Express as a set of REST-ful API endpoints and socket.io pub-sub messages, which together provide functionality such as user management and grid state management.
 
 1. Each client is assigned a unique nickname and colour on initial connection through socket.io
 
@@ -191,26 +195,26 @@ Frontend deployment to Netlify is configured using a `netlify.toml` file present
 
 1. Client connection/disconnection events are handled using socket.io's built-in functionality to detect such events. Furthermore, care is taken on the client to sync the latest grid state and user list state immediately after reconnection.
 
+1. CORS is enabled on the server to allow the client to connect to API endpoints from a different host. A production grade application should whitelist the specific hosts where CORS is allowed.
+
 ## Limitations
 
-1. Multi-cell updates (e.g. clicking on the `Random` button or loading patterns) doesn't take effect immediately on the frontend if a simulation is running and a new update comes in. Logic could be added to block new simulation updates after such updates.
+1. Multi-cell updates (e.g. clicking on the `Random` button or loading patterns) don't take effect immediately on the frontend if a simulation is running and a new update comes in. Logic could be added to block new simulation updates after such updates.
 
-1. The footer is not visible in the viewport on iPhone Safari and the user has to scroll down to view the footer. This issue is not present on common Android phones tested here and should be fixable using CSS media queries.
+1. The footer is not visible in the viewport on iPhone Safari and the user has to scroll down to view the footer. This issue is not present when tested on common Android phones and should be fixable using CSS media queries.
 
 1. The drag functionality on the cell grid is limited to mouse events currently and doesn't work on mobile. A mobile touch-friendly library such as [vue-touch](https://alligator.io/vuejs/vue-touch-events/) could be used to respond to such mobile drag events.
 
-1. Currently, the client and server code share the same `node_modules` dependencies, due to which the JS bundle on the client is quite big (almost 0.5 MB). Approaches to fix this include:
-
-   1. Using a library such as [Lerna](https://lerna.js.org/) to change this repo into a mono-repo (aka multi-package repository), with separate client and server directories using some common dependencies where applicable.
+1. Currently, the client and server code share the same `node_modules` dependencies, due to which the JS bundle on the client is quite big (almost 0.5 MB). Could use a library such as [Lerna](https://lerna.js.org/) to change this repo into a mono-repo (aka multi-package repository), with separate client and server directories using some common dependencies where applicable.
 
 ## Extension Ideas
 
-1. Server scaling: The list of users and there associated metadata (such as username and colours) could be stored in a shared cache such as Redis. The same could be done for the global grid state.
+1. Server scaling: The list of users and there associated metadata (such as username and colours) could be stored in a shared cache such as [Redis](https://redis.io/) or in a managed key-value database such as [DynamoDB](https://aws.amazon.com/dynamodb/). The same could be done for the global grid state.
 
-   1. This way, each server instance becomes stateless by itself, with the actual state being stored/retrieved by each instance from Redis.
-   1. Furthermore, redis locks can be used to prevent race conditions in updates with multiple instances.
+   1. This way, each server instance becomes stateless by itself, with the actual state being stored/retrieved by each instance from the shared database.
+   1. Furthermore, redis distributed locks could be used to prevent race conditions in updates with multiple instances.
 
-1. User authentication could be implemented as an additional set of `user` endpoints. Unauthenticated users would not be able to access any grid-specific endpoints.
+1. User authentication could be implemented as an additional set of `user` endpoints, with social sign on implemented using an authentication service such as [Auth0](https://auth0.com/). Unauthenticated users would not be able to access any grid-specific endpoints.
 
 ## Credits
 
