@@ -1,3 +1,18 @@
 [build]
 publish = "dist"
 command = "npm install && npm run build-client"
+
+# Production context: all deploys from the Production branch set in your site's
+# deploy contexts will get these environment variables
+[context.production.environment]
+VUE_APP_SERVER_ADDRESS = "https://stark-lake-47409.herokuapp.com"
+
+# Deploy Preview context: all deploys generated from a pull/merge request will
+# get these environment variables
+[context.deploy-preview.environment]
+VUE_APP_SERVER_ADDRESS = "https://stark-plains-46658.herokuapp.com"
+
+# Branch Deploy context: all deploys that are not from a pull/merge request or
+# from the Production branch will get these environment variables
+[context.branch-deploy.environment]
+VUE_APP_SERVER_ADDRESS = "https://stark-plains-46658.herokuapp.com"

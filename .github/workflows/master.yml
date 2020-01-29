@@ -1,26 +1,16 @@
-name: multiplayer-game-of-life
-on: [push]
+name: master-cd
+on:
+  push:
+    branches:
+      - master
 jobs:
   build:
-    name: Build
+    name: Production Deploy
     runs-on: ubuntu-latest
     env:
-      STAGE_APP: stark-plains-46658
+      PRODUCTION_APP: stark-lake-47409
     steps:
-      # Checks-out your git repo under $GITHUB_WORKSPACE directory on the test VM,
-      # so your workflow can access it.
       - uses: actions/checkout@v2
-
-      # Downloads and caches node version 10.x
-      - uses: actions/setup-node@v1
-        with:
-          node-version: "10.x"
-
-      # Installs dependencies in the local node_modules directory
-      - run: npm install
-
-      # Runs tests for the current version of the code
-      - run: npm test
 
       # Login to Heroku Container Registry
       # HEROKU_API_KEY is a Github secret accessible only
@@ -34,21 +24,20 @@ jobs:
 
       # Build and push a docker image using the Dockerfile
       # to the Heroku Container Registry
-      # using the STAGE_APP docker repository
+      # using the PRODUCTION_APP docker repository
       - name: push
         uses: actions/heroku@master
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
         with:
-          args: container:push -a $STAGE_APP web
+          args: container:push -a $PRODUCTION_APP web
 
-      # Release latest STAGE app using the latest
-      # STAGE container image
-      # TODO: Don't run this step on feature branches later
+      # Release latest PRODUCTION app using the latest
+      # PRODUCTION container image
       - name: release
         uses: actions/heroku@master
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
           NODE_ENV: production
         with:
-          args: container:release -a $STAGE_APP web
+          args: container:release -a $PRODUCTION_APP web
