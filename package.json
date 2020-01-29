@@ -9,6 +9,7 @@
     "serve-client": "vue-cli-service serve",
     "build-client": "vue-cli-service build",
     "lint-client": "vue-cli-service lint",
+    "lint-server": "eslint ./server",
     "server": "nodemon -w ./server -r esm ./server/run.js",
     "server-prod": "node -r esm ./server/run.js",
     "test": "jest",

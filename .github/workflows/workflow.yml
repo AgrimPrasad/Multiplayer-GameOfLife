@@ -19,6 +19,12 @@ jobs:
       # Installs dependencies in the local node_modules directory
       - run: npm install
 
+      # Runs linting tests for the current client version of the code
+      - run: npm run lint-client
+
+      # Runs linting tests for the current server version of the code
+      - run: npm run lint-server
+
       # Runs tests for the current version of the code
       - run: npm test
 
