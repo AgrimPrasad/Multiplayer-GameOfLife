@@ -177,7 +177,7 @@ Frontend deployment to Netlify is configured using a `netlify.toml` file present
 
 1. Clicking on the Play, Pause, Change interval and Reset buttons also triggers POST API calls to appropriate endpoints for global state propagation. These API endpoints are `/api/grid/start`, `/api/grid/pause`, `/api/grid/interval` and `/api/grid/reset`. The server again propagates these changes to all clients using socket.io
 
-1. User connection/disconnection logic is handed off to socket.io
+1. User connection/disconnection logic is largely handed off to socket.io . It was found that reconnection doesn't handle cell update sync-ing properly, therefore a workaround was implemented to reload the page if a `welcome` socket.io message is received with a different username to the user's current username. The drawback here is that the user's username changes, but atleast the game syncs again visually.
 
 #### Server Logic
 
@@ -193,7 +193,7 @@ Frontend deployment to Netlify is configured using a `netlify.toml` file present
 
    1. In general, the flow of messages is `client creates event` -> emits the event to server -> server updates shared state if applicable (e.g. a list of users or active cells) -> server broadcasts the update to all users.
 
-1. Client connection/disconnection events are handled using socket.io's built-in functionality to detect such events. Furthermore, care is taken on the client to sync the latest grid state and user list state immediately after reconnection.
+1. Client connection/disconnection events are handled using socket.io's built-in functionality to detect such events.
 
 1. When a dead cell is revived, it is given a colour which is the mathematical average of its neighbours.
 

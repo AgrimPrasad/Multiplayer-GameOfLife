@@ -106,6 +106,15 @@ export default {
     // Fired when the server sends something
     // on the "welcome" channel.
     welcome(data) {
+      if (this.username != "") {
+        // user was connected before
+        // handle re-connection by reloading page,
+        // otherwise cells don't update properly
+        // after reconnection for some reason
+        this.username = "";
+        window.location.reload();
+      }
+
       this.userColor = data.userColor;
       this.username = data.username;
     },
