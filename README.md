@@ -215,6 +215,14 @@ Frontend deployment to Netlify is configured using a `netlify.toml` file present
 
 1. As noted above, reconnection requires page reload to fully sync state and allow cell updates. More careful analysis of the cell update logic could be performed to remove the need for page reload.
 
+1. It is found in rare cases that the Express server may stop working suddenly with 30 second timeout limit of Heroku being exceeded with 503 error returned to the frontend.
+
+   1. This seems to be a common issue with Node.js documented by Heroku itself at https://help.heroku.com/AXOSFIXN/why-am-i-getting-h12-request-timeout-errors-in-nodejs
+
+   1. If you start seeing 503 timeout errors with the `production` app at http://gameoflife.agrimprasad.com (when trying to connect to https://stark-lake-47409.herokuapp.com), try using the `stage` app at https://next.gameoflife.agrimprasad.com (which will attempt to connnect to https://stark-plains-46658.herokuapp.com)
+
+   1. The only way currently to fix this issue is to restart the server running on Heroku with the `heroku restart` command. For example, to restart the `stage` server app, run `heroku restart -a stark-plains-46658` (need appropriate access obviously). Proper debugging can be performed in the future to figure out the bug which can cause this condition to occur in the server app.
+
 ## Extension Ideas
 
 1. Server scaling: The list of users and there associated metadata (such as username and colours) could be stored in a shared cache such as [Redis](https://redis.io/) or in a managed key-value database such as [DynamoDB](https://aws.amazon.com/dynamodb/). The same could be done for the global grid state.
