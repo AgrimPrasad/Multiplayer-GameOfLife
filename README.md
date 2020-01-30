@@ -129,7 +129,7 @@ Backend is deployed using GitHub Actions to Heroku. Pushing a commit to GitHub s
 
 1. `Dockerfile` configured in the root of this repo is used to build a docker image for the server. Docker Build steps are defined in `.github/workflows/next.yml` which is only triggered on a new push to the `next` branch.
 
-1. [Heroku Actions](https://github.com/actions/heroku) plugin for Github Actions is then used to push the built server Docker image to the `stage` app's Heroku Container Registry, and then release a tested docker image to the `stage` app which is running on Heroku at https://stark-plains-46658.herokuapp.com . These steps are also in `.github/workflows/next.yml`.
+1. [Heroku Actions](https://github.com/actions/heroku) plugin for Github Actions is then used to push the built server Docker image to the `stage` app's Heroku Container Registry, set environment variables and then release a tested docker image to the `stage` app which is running on Heroku at https://stark-plains-46658.herokuapp.com . These steps are also in `.github/workflows/next.yml`.
 
 1. `.github/workflows/master.yml` defines the steps to build, push and release a tested Docker image to the `production` app which is running on Heroku at https://stark-lake-47409.herokuapp.com These steps are only triggered on a new push to the `master` branch.
 

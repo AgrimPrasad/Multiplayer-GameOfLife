@@ -75,9 +75,9 @@ app.use(function(err, req, res, next) {
 });
 
 let swaggerHost = "localhost:3000";
-if (process.env.NODE_ENV == "development") {
-  // address for current production server
-  swaggerHost = "stark-lake-47409.herokuapp.com";
+if (process.env.DEPLOY_ADDRESS != "") {
+  // address for server deployment
+  swaggerHost = process.env.DEPLOY_ADDRESS;
 }
 
 let swaggerOptions = {
