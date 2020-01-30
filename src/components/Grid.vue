@@ -152,22 +152,6 @@ export default {
           this.setCell(i, j, "#ffffff", false, false);
         }
       }
-    },
-
-    // Fired when the server sends something
-    // on the "userChangedInterval" channel.
-    userChangedInterval(data) {
-      const message = data.message;
-
-      if (this.username === message.user.username) {
-        return;
-      }
-
-      const newSpeed = Math.round(100000 / message.interval);
-      const deltaSpeed = newSpeed - this.currentSpeed;
-
-      // change current speed locally
-      this.$emit("changeSpeed", deltaSpeed);
     }
   },
   watch: {

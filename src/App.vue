@@ -304,6 +304,21 @@ export default {
     },
 
     // Fired when the server sends something
+    // on the "userChangedInterval" channel.
+    userChangedInterval(data) {
+      const message = data.message;
+
+      if (this.username === message.user.username) {
+        return;
+      }
+
+      const newSpeed = Math.round(100000 / message.interval);
+      const deltaSpeed = newSpeed - this.speed;
+
+      this.changeSpeed(deltaSpeed);
+    },
+
+    // Fired when the server sends something
     // on the "userStartedSimulation" channel.
     userStartedSimulation() {
       // message is broadcasted, so check if play message triggered by this client itself by checking the isRunning status
