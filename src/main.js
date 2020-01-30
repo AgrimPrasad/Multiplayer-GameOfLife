@@ -26,6 +26,7 @@ if (process.env.NODE_ENV != "production") {
 
 let serverAddr = process.env.VUE_APP_SERVER_ADDRESS || "http://localhost:3000";
 
+// Plugin to use socket.io clien with Vue.js more easily
 Vue.use(
   new VueSocketIO({
     debug: debug,
@@ -33,6 +34,7 @@ Vue.use(
   })
 );
 
+// install vue helper functions
 const plugin = {
   install() {
     Vue.helpers = helpers;

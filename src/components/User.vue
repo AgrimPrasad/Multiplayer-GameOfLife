@@ -19,7 +19,7 @@ export default {
   },
   computed: {
     /*
-     * returns a style for the current user
+     * returns a style for the user associated with this component
      */
     userColorStyle: function() {
       return "background-color: " + this.userColor + " !important";
