@@ -108,25 +108,6 @@ export default {
     },
 
     // Fired when the server sends something
-    // on the "welcome" channel.
-    welcome(data) {
-      if (this.username != "") {
-        // user was connected before
-        // handle re-connection by re-rendering component,
-        // otherwise cells don't update properly
-        // after reconnection for some reason
-        this.$emit("updateUsername", data.username);
-        this.$emit("updateUserColor", data.userColor);
-
-        // following will re-render component immediately and not call next lines
-        this.$emit("reRenderGrid");
-      }
-
-      this.$emit("updateUsername", data.username);
-      this.$emit("updateUserColor", data.userColor);
-    },
-
-    // Fired when the server sends something
     // on the "userClickedGrid" channel.
     userClickedGrid(data) {
       const message = data.message;

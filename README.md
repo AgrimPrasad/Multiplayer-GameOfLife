@@ -230,6 +230,8 @@ Frontend deployment to Netlify is configured using a `netlify.toml` file present
 
 1. Currently, the client and server code share the same `node_modules` dependencies, due to which the JS bundle on the client is quite big (almost 0.5 MB). Could use a library such as [Lerna](https://lerna.js.org/) to change this repo into a mono-repo (aka multi-package repository), with separate client and server directories using some common dependencies where applicable.
 
+1. `Vuex` library could be used for more robust frontend state management. This would result in a single state file rather than the app state being spread over multiple components.
+
 1. User authentication could be implemented as an additional set of `user` endpoints, with social login implemented using an authentication service such as [Auth0](https://auth0.com/). Unauthenticated users would not be able to access any grid-specific endpoints.
 
 1. The server API could be versioned as `/v1`, `/v2` etc. to allow for breaking changes.

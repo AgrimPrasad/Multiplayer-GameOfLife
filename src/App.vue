@@ -87,9 +87,6 @@
                     @exportToken="exportSession($event)"
                     @isRunning="updateIsRunning($event)"
                     @changeSpeed="changeSpeed($event)"
-                    @reRenderGrid="reRenderGrid($event)"
-                    @updateUsername="updateUsername($event)"
-                    @updateUserColor="updateUserColor($event)"
                   />
                   <app-info v-if="mainComponent == 'infoPage'" />
                 </keep-alive>
@@ -136,6 +133,7 @@
               <app-controller
                 :is-running="isRunning"
                 :main-component="mainComponent"
+                :key="controllerKey"
                 @send="delegate($event)"
               />
             </div>
@@ -250,8 +248,9 @@ export default {
       username: "",
       userColor: "",
 
-      // grid key to re-render grid on reconnection
-      gridKey: ""
+      // key to re-render components on reconnection
+      gridKey: "",
+      controllerKey: ""
     };
   },
   watch: {
@@ -286,6 +285,22 @@ export default {
 
     disconnect() {
       this.isConnected = false;
+    },
+
+    // Fired when the server sends something
+    // on the "welcome" channel.
+    welcome(data) {
+      if (this.username != "") {
+        // user was connected before
+        // handle re-connection by re-rendering component,
+        // otherwise cells don't update properly
+        // after reconnection for some reason
+
+        this.reRenderComponents();
+      }
+
+      this.username = data.username;
+      this.userColor = data.userColor;
     },
 
     // Fired when the server sends something
@@ -443,13 +458,14 @@ export default {
       }
     },
     /**
-     * Re-render app-grid component by changing its key attribute
-     * Used during re-connection
+     * Re-render components by changing their `key` attribute
+     * Used during re-connection to refresh state
      * Source: https://github.com/vuejs/Discussion/issues/356#issuecomment-336060875
      *
      */
-    reRenderGrid: function() {
+    reRenderComponents: function() {
       this.gridKey = shortid.generate();
+      this.controllerKey = shortid.generate();
     },
     /**
      * Update the username. Usually sent up by the grid component
