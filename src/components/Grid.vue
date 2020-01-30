@@ -62,6 +62,14 @@ export default {
         return [];
       },
       type: Array
+    },
+    username: {
+      default: "",
+      type: String
+    },
+    userColor: {
+      default: "",
+      type: String
     }
   },
   data() {
@@ -80,11 +88,7 @@ export default {
       isPointerDown: false,
 
       // socket variables
-      isConnected: false,
-
-      // user variables
-      userColor: "#ffffff",
-      username: ""
+      isConnected: false
     };
   },
   computed: {},
@@ -101,13 +105,6 @@ export default {
     // on the "gridUpdate" channel.
     gridUpdate(data) {
       this.update(data);
-    },
-
-    // Fired when the server sends something
-    // on the "welcome" channel.
-    welcome(data) {
-      this.userColor = data.userColor;
-      this.username = data.username;
     },
 
     // Fired when the server sends something
@@ -155,22 +152,6 @@ export default {
           this.setCell(i, j, "#ffffff", false, false);
         }
       }
-    },
-
-    // Fired when the server sends something
-    // on the "userChangedInterval" channel.
-    userChangedInterval(data) {
-      const message = data.message;
-
-      if (this.username === message.user.username) {
-        return;
-      }
-
-      const newSpeed = Math.round(100000 / message.interval);
-      const deltaSpeed = newSpeed - this.currentSpeed;
-
-      // change current speed locally
-      this.$emit("changeSpeed", deltaSpeed);
     }
   },
   watch: {

@@ -10,6 +10,24 @@ The frontend is deployed using Netlify and communicates with the API Server on H
 
 Check out the API docs at https://stark-lake-47409.herokuapp.com/api-docs
 
+## Project Goals
+
+Conway's Game of Life is an interesting simulation of 'Life' as a grid of cells. The game is automated and based on 4 rules that determine the status of all cells inside the grid. A cell can either be 'alive' or 'dead'. Every turn (tick) rules get applied to all cells that are currently alive.
+
+This project aims to take this further by allowing multiple players to play the game at the same time, with the ability to click cells, interact with the cell grid and start/stop the simulation in parallel in real time.
+
+Furthermore, the game provides a toolbar where players can import interesting patterns or copy interesting patterns from the grid to their clipboard.
+
+### Conway's Game of Life Logic
+
+1. Any live cell with fewer than two live neighbours dies, as if caused by under-population.
+
+1. Any live cell with two or three live neighbours lives on to the next generation.
+
+1. Any live cell with more than three live neighbours dies, as if by overcrowding.
+
+1. Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
+
 ## Architecture
 
 This implementation has the following high-level architecture:
@@ -151,19 +169,7 @@ Frontend deployment to Netlify is configured using a `netlify.toml` file present
 
 ## Implementation Details
 
-### Game Logic
-
-#### Basic Conway's Game of Life Logic
-
-1. Any live cell with fewer than two live neighbours dies, as if caused by under-population.
-
-1. Any live cell with two or three live neighbours lives on to the next generation.
-
-1. Any live cell with more than three live neighbours dies, as if by overcrowding.
-
-1. Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
-
-#### Client Logic
+### Client Logic
 
 1. The game is implemented in ticks of 1-second interval by default, and the user can change this interval to a slower value if desired. On every tick, the state of the entire grid is re-evaluated based on new inputs received from different clients using socket.io
 
@@ -177,9 +183,9 @@ Frontend deployment to Netlify is configured using a `netlify.toml` file present
 
 1. Clicking on the Play, Pause, Change interval and Reset buttons also triggers POST API calls to appropriate endpoints for global state propagation. These API endpoints are `/api/grid/start`, `/api/grid/pause`, `/api/grid/interval` and `/api/grid/reset`. The server again propagates these changes to all clients using socket.io
 
-1. User connection/disconnection logic is handed off to socket.io
+1. User connection/disconnection logic is largely handed off to socket.io . It was found that reconnection doesn't handle cell update sync-ing properly as the `Grid` Vue component doesn't react immediately after a reconnection. Thus, the `Grid` Vue component is re-created upon reconnection, with its variables being re-rendered. This can refresh the app state successfully in tests.
 
-#### Server Logic
+### Server Logic
 
 1. The server API docs are available at https://stark-lake-47409.herokuapp.com/api-docs
 
@@ -193,7 +199,7 @@ Frontend deployment to Netlify is configured using a `netlify.toml` file present
 
    1. In general, the flow of messages is `client creates event` -> emits the event to server -> server updates shared state if applicable (e.g. a list of users or active cells) -> server broadcasts the update to all users.
 
-1. Client connection/disconnection events are handled using socket.io's built-in functionality to detect such events. Furthermore, care is taken on the client to sync the latest grid state and user list state immediately after reconnection.
+1. Client connection/disconnection events are handled using socket.io's built-in functionality to detect such events.
 
 1. When a dead cell is revived, it is given a colour which is the mathematical average of its neighbours.
 
@@ -207,7 +213,13 @@ Frontend deployment to Netlify is configured using a `netlify.toml` file present
 
 1. The drag functionality on the cell grid is limited to mouse events currently and doesn't work on mobile. A mobile touch-friendly library such as [vue-touch](https://alligator.io/vuejs/vue-touch-events/) could be used to respond to such mobile drag events.
 
-1. Currently, the client and server code share the same `node_modules` dependencies, due to which the JS bundle on the client is quite big (almost 0.5 MB). Could use a library such as [Lerna](https://lerna.js.org/) to change this repo into a mono-repo (aka multi-package repository), with separate client and server directories using some common dependencies where applicable.
+1. It is found in rare cases that the Express server may stop working suddenly with 30 second timeout limit of Heroku being exceeded with 503 error returned to the frontend. This is more common when the number of clients exceed 3 to 4 clients connected over long periods of time. Possibly, there is some memory leak or edge case which is triggered in this case.
+
+   1. This seems to be a common issue with Node.js documented by Heroku itself at https://help.heroku.com/AXOSFIXN/why-am-i-getting-h12-request-timeout-errors-in-nodejs
+
+   1. If you start seeing 503 timeout errors with the `production` app at http://gameoflife.agrimprasad.com (when trying to connect to https://stark-lake-47409.herokuapp.com), try using the `stage` app at https://next.gameoflife.agrimprasad.com (which will attempt to connnect to https://stark-plains-46658.herokuapp.com)
+
+   1. The only way currently to fix this issue is to restart the server running on Heroku with the `heroku restart` command. For example, to restart the `stage` server app, run `heroku restart -a stark-plains-46658` (need appropriate access obviously). Proper debugging can be performed in the future to figure out the bug which can cause this condition to occur in the server app.
 
 ## Extension Ideas
 
@@ -216,11 +228,17 @@ Frontend deployment to Netlify is configured using a `netlify.toml` file present
    1. This way, each server instance becomes stateless by itself, with the actual state being stored/retrieved by each instance from the shared database.
    1. Furthermore, redis distributed locks could be used to prevent race conditions in updates with multiple instances.
 
+1. Currently, the client and server code share the same `node_modules` dependencies, due to which the JS bundle on the client is quite big (almost 0.5 MB). Could use a library such as [Lerna](https://lerna.js.org/) to change this repo into a mono-repo (aka multi-package repository), with separate client and server directories using some common dependencies where applicable.
+
+1. `Vuex` library could be used for more robust frontend state management. This would result in a single state file rather than the app state being spread over multiple components.
+
 1. User authentication could be implemented as an additional set of `user` endpoints, with social login implemented using an authentication service such as [Auth0](https://auth0.com/). Unauthenticated users would not be able to access any grid-specific endpoints.
 
 1. The server API could be versioned as `/v1`, `/v2` etc. to allow for breaking changes.
 
 1. The Heroku server could be proxied by a DDoS prevention service such as Cloudflare to prevent common online attacks.
+
+1. More unit tests and integration tests should be added. Only smoke tests were added here due to time constraints. Tests should cover component behaviour, mock API responses and especially account for error cases, such as reconnection or API timeouts.
 
 ## Credits
 
@@ -229,3 +247,7 @@ This project was inspired in various ways by the following existing projects:
 1. [Ijee/Game-of-Life-Vue2](https://github.com/Ijee/Game-of-Life-Vue2) Vue based implementation of the Game of Life. Much of the CSS styling and Vue component organization comes from here.
 
 1. [germanger/iosocket-game-of-life](https://github.com/germanger/iosocket-game-of-life) socket.io and Angular.js based implementation of Game of Life. The Multi-player logic takes inspiration from this project.
+
+## Reach Out
+
+Follow me on [Twitter](https://twitter.com/AgrimPrasad) for more such interesting projects! Also give my blog a visit at [https://agrimprasad.com](https://agrimprasad.com/) where I post interesting technical articles every once in a while.

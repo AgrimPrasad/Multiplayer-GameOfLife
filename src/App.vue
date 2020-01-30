@@ -81,6 +81,9 @@
                     :current-speed="speed"
                     :server-addr="serverAddr"
                     :users="users"
+                    :key="gridKey"
+                    :username="username"
+                    :userColor="userColor"
                     @exportToken="exportSession($event)"
                     @isRunning="updateIsRunning($event)"
                     @changeSpeed="changeSpeed($event)"
@@ -130,6 +133,7 @@
               <app-controller
                 :is-running="isRunning"
                 :main-component="mainComponent"
+                :key="controllerKey"
                 @send="delegate($event)"
               />
             </div>
@@ -201,6 +205,7 @@ import Vue from "vue";
 import Controller from "./components/Controller.vue";
 import Grid from "./components/Grid.vue";
 import AppInfo from "./components/AppInfo.vue";
+import shortid from "shortid";
 
 let serverAddr = process.env.VUE_APP_SERVER_ADDRESS || "http://localhost:3000";
 
@@ -239,7 +244,13 @@ export default {
       isConnected: false,
 
       // user variables
-      users: []
+      users: [],
+      username: "",
+      userColor: "",
+
+      // key to re-render components on reconnection
+      gridKey: "",
+      controllerKey: ""
     };
   },
   watch: {
@@ -274,6 +285,37 @@ export default {
 
     disconnect() {
       this.isConnected = false;
+    },
+
+    // Fired when the server sends something
+    // on the "welcome" channel.
+    welcome(data) {
+      if (this.username != "") {
+        // user was connected before
+        // handle re-connection by re-rendering component,
+        // otherwise cells don't update properly
+        // after reconnection for some reason
+
+        this.reRenderComponents();
+      }
+
+      this.username = data.username;
+      this.userColor = data.userColor;
+    },
+
+    // Fired when the server sends something
+    // on the "userChangedInterval" channel.
+    userChangedInterval(data) {
+      const message = data.message;
+
+      if (this.username === message.user.username) {
+        return;
+      }
+
+      const newSpeed = Math.round(100000 / message.interval);
+      const deltaSpeed = newSpeed - this.speed;
+
+      this.changeSpeed(deltaSpeed);
     },
 
     // Fired when the server sends something
@@ -429,6 +471,28 @@ export default {
       } else if (this.speed > 100) {
         this.speed = 100;
       }
+    },
+    /**
+     * Re-render components by changing their `key` attribute
+     * Used during re-connection to refresh state
+     * Source: https://github.com/vuejs/Discussion/issues/356#issuecomment-336060875
+     *
+     */
+    reRenderComponents: function() {
+      this.gridKey = shortid.generate();
+      this.controllerKey = shortid.generate();
+    },
+    /**
+     * Update the username. Usually sent up by the grid component
+     */
+    updateUsername: function(username) {
+      this.username = username;
+    },
+    /**
+     * Update the user color. Usually sent up by the grid component
+     */
+    updateUserColor: function(userColor) {
+      this.userColor = userColor;
     },
     /**
      * Sets the message for one tick
