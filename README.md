@@ -117,7 +117,7 @@ The server is deployed on Heroku, while the client is deployed to Netlify. This 
 
 #### Continuous Integration
 
-CI Tests (including linting tests) are run using GitHub Actions. The GitHub Actions steps are configured in `.github/workflows/workflow.yaml` and are used both for running tests and for deploying the backend app to Heroku.
+CI Tests (including linting tests) are run using GitHub Actions. The GitHub Actions steps for this are configured in `.github/workflows/build.yml` and are used both for running tests and for deploying the backend app to Heroku.
 
 The test step runs `npm test` using the `jest` library as mentioned in the `Tests` section above. Server and client Linting is also performed here using `eslint`.
 
@@ -125,17 +125,13 @@ The test step runs `npm test` using the `jest` library as mentioned in the `Test
 
 Backend is deployed using GitHub Actions to Heroku. Pushing a commit to GitHub should trigger GitHub Actions to run automatically.
 
-1. To install the `heroku` command line client locally, run `brew install heroku/brew/heroku`. Then login to heroku with `heroku login`
+1. To install the `heroku` command-line client locally, run `brew install heroku/brew/heroku`. Then login to heroku with `heroku login`
 
-1. `Dockerfile` configured in the root of this repo is used to build a docker image for the server. Build and test steps are defined in `.github/workflows/workflow.yml`. This file also pushes a new container image to the `stage` Heroku app's container registry.
+1. `Dockerfile` configured in the root of this repo is used to build a docker image for the server. Docker Build steps are defined in `.github/workflows/next.yml` which is only triggered on a new push to the `next` branch.
 
-1. [Heroku Actions](https://github.com/actions/heroku) plugin for Github Actions is then used to push the built server image to the `stage` app's Heroku Container Registry.
+1. [Heroku Actions](https://github.com/actions/heroku) plugin for Github Actions is then used to push the built server Docker image to the `stage` app's Heroku Container Registry, and then release a tested docker image to the `stage` app which is running on Heroku at https://stark-plains-46658.herokuapp.com . These steps are also in `.github/workflows/next.yml`.
 
-1. The previous two steps for building, testing and pushing a new `stage` container image are defined in `.github/workflows/workflow.yml`.
-
-1. `.github/workflows/next.yml` defines the steps to release a tested container image to the `stage` app which is running on Heroku at https://stark-plains-46658.herokuapp.com These steps are only triggered on a new push to the `next` branch.
-
-1. `.github/workflows/master.yml` defines the steps to push and release a tested container image to the `production` app which is running on Heroku at https://stark-lake-47409.herokuapp.com These steps are only triggered on a new push to the `master` branch.
+1. `.github/workflows/master.yml` defines the steps to build, push and release a tested Docker image to the `production` app which is running on Heroku at https://stark-lake-47409.herokuapp.com These steps are only triggered on a new push to the `master` branch.
 
 1. `NODE_ENV` environment variable is set to `production` in the Github Actions files to trigger production builds.
 

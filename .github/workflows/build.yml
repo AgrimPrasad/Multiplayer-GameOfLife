@@ -4,8 +4,6 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-    env:
-      STAGE_APP: stark-plains-46658
     steps:
       # Checks-out your git repo under $GITHUB_WORKSPACE directory on the test VM,
       # so your workflow can access it.
@@ -27,23 +25,3 @@ jobs:
 
       # Runs tests for the current version of the code
       - run: npm test
-
-      # Login to Heroku Container Registry
-      # HEROKU_API_KEY is a Github secret accessible only
-      # to Github project collaborators for use.
-      - name: login
-        uses: actions/heroku@master
-        env:
-          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-        with:
-          args: container:login
-
-      # Build and push a docker image using the Dockerfile
-      # to the Heroku Container Registry
-      # using the STAGE_APP docker repository
-      - name: push
-        uses: actions/heroku@master
-        env:
-          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-        with:
-          args: container:push -a $STAGE_APP -r staging web
