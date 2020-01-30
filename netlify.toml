@@ -2,9 +2,7 @@
 # from where these files are picked up by Netlify for deployment
 [build]
 publish = "dist"
-# npm ci --only=production is like npm install
-# but for production apps
-command = "npm ci --only=production && npm run build-client"
+command = "npm install && npm run build-client"
 
 # Production context: all deploys from the Production branch set in your site's
 # deploy contexts will get these environment variables
