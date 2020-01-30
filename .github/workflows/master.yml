@@ -8,6 +8,7 @@ jobs:
     name: Production Deploy
     runs-on: ubuntu-latest
     env:
+      PRODUCTION_ADDRESS: stark-lake-47409.herokuapp.com
       PRODUCTION_APP: stark-lake-47409
       PRODUCTION_REMOTE: production
     steps:
@@ -40,7 +41,7 @@ jobs:
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
         with:
-          args: config:set NODE_ENV=production -a $PRODUCTION_APP -r $PRODUCTION_REMOTE
+          args: config:set NODE_ENV=$PRODUCTION_REMOTE DEPLOY_ADDRESS=$PRODUCTION_ADDRESS -a $PRODUCTION_APP -r $PRODUCTION_REMOTE
 
       # Release latest PRODUCTION app using the latest
       # PRODUCTION container image

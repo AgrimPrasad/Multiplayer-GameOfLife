@@ -8,6 +8,7 @@ jobs:
     name: Stage Deploy
     runs-on: ubuntu-latest
     env:
+      STAGE_ADDRESS: stark-plains-46658.herokuapp.com
       STAGE_APP: stark-plains-46658
       STAGE_REMOTE: staging
     steps:
@@ -40,7 +41,7 @@ jobs:
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
         with:
-          args: config:set NODE_ENV=production -a $STAGE_APP -r $STAGE_REMOTE
+          args: config:set NODE_ENV=production DEPLOY_ADDRESS=$STAGE_ADDRESS -a $STAGE_APP -r $STAGE_REMOTE
 
       # Release latest STAGE app using the latest
       # STAGE container image
