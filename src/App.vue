@@ -81,9 +81,15 @@
                     :current-speed="speed"
                     :server-addr="serverAddr"
                     :users="users"
+                    :key="gridKey"
+                    :username="username"
+                    :userColor="userColor"
                     @exportToken="exportSession($event)"
                     @isRunning="updateIsRunning($event)"
                     @changeSpeed="changeSpeed($event)"
+                    @reRenderGrid="reRenderGrid($event)"
+                    @updateUsername="updateUsername($event)"
+                    @updateUserColor="updateUserColor($event)"
                   />
                   <app-info v-if="mainComponent == 'infoPage'" />
                 </keep-alive>
@@ -201,6 +207,7 @@ import Vue from "vue";
 import Controller from "./components/Controller.vue";
 import Grid from "./components/Grid.vue";
 import AppInfo from "./components/AppInfo.vue";
+import shortid from "shortid";
 
 let serverAddr = process.env.VUE_APP_SERVER_ADDRESS || "http://localhost:3000";
 
@@ -239,7 +246,12 @@ export default {
       isConnected: false,
 
       // user variables
-      users: []
+      users: [],
+      username: "",
+      userColor: "",
+
+      // grid key to re-render grid on reconnection
+      gridKey: ""
     };
   },
   watch: {
@@ -429,6 +441,27 @@ export default {
       } else if (this.speed > 100) {
         this.speed = 100;
       }
+    },
+    /**
+     * Re-render app-grid component by changing its key attribute
+     * Used during re-connection
+     * Source: https://github.com/vuejs/Discussion/issues/356#issuecomment-336060875
+     *
+     */
+    reRenderGrid: function() {
+      this.gridKey = shortid.generate();
+    },
+    /**
+     * Update the username. Usually sent up by the grid component
+     */
+    updateUsername: function(username) {
+      this.username = username;
+    },
+    /**
+     * Update the user color. Usually sent up by the grid component
+     */
+    updateUserColor: function(userColor) {
+      this.userColor = userColor;
     },
     /**
      * Sets the message for one tick

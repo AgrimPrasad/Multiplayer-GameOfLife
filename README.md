@@ -183,7 +183,7 @@ Frontend deployment to Netlify is configured using a `netlify.toml` file present
 
 1. Clicking on the Play, Pause, Change interval and Reset buttons also triggers POST API calls to appropriate endpoints for global state propagation. These API endpoints are `/api/grid/start`, `/api/grid/pause`, `/api/grid/interval` and `/api/grid/reset`. The server again propagates these changes to all clients using socket.io
 
-1. User connection/disconnection logic is largely handed off to socket.io . It was found that reconnection doesn't handle cell update sync-ing properly, therefore a workaround was implemented to reload the page if a `welcome` socket.io message is received with a different username to the user's current username. The drawback here is that the user's username changes, but atleast the game syncs again visually.
+1. User connection/disconnection logic is largely handed off to socket.io . It was found that reconnection doesn't handle cell update sync-ing properly as the `Grid` Vue component doesn't react immediately after a reconnection. Thus, the `Grid` Vue component is re-created upon reconnection, with its variables being re-rendered. This can refresh the app state successfully in tests.
 
 ### Server Logic
 
@@ -213,9 +213,7 @@ Frontend deployment to Netlify is configured using a `netlify.toml` file present
 
 1. The drag functionality on the cell grid is limited to mouse events currently and doesn't work on mobile. A mobile touch-friendly library such as [vue-touch](https://alligator.io/vuejs/vue-touch-events/) could be used to respond to such mobile drag events.
 
-1. As noted above, reconnection requires page reload to fully sync state and allow cell updates. More careful analysis of the cell update logic could be performed to remove the need for page reload.
-
-1. It is found in rare cases that the Express server may stop working suddenly with 30 second timeout limit of Heroku being exceeded with 503 error returned to the frontend.
+1. It is found in rare cases that the Express server may stop working suddenly with 30 second timeout limit of Heroku being exceeded with 503 error returned to the frontend. This is more common when the number of clients exceed 3 to 4 clients connected over long periods of time. Possibly, there is some memory leak or edge case which is triggered in this case.
 
    1. This seems to be a common issue with Node.js documented by Heroku itself at https://help.heroku.com/AXOSFIXN/why-am-i-getting-h12-request-timeout-errors-in-nodejs
 

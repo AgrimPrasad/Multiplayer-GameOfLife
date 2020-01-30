@@ -62,6 +62,14 @@ export default {
         return [];
       },
       type: Array
+    },
+    username: {
+      default: "",
+      type: String
+    },
+    userColor: {
+      default: "",
+      type: String
     }
   },
   data() {
@@ -80,11 +88,7 @@ export default {
       isPointerDown: false,
 
       // socket variables
-      isConnected: false,
-
-      // user variables
-      userColor: "#ffffff",
-      username: ""
+      isConnected: false
     };
   },
   computed: {},
@@ -108,15 +112,18 @@ export default {
     welcome(data) {
       if (this.username != "") {
         // user was connected before
-        // handle re-connection by reloading page,
+        // handle re-connection by re-rendering component,
         // otherwise cells don't update properly
         // after reconnection for some reason
-        this.username = "";
-        window.location.reload();
+        this.$emit("updateUsername", data.username);
+        this.$emit("updateUserColor", data.userColor);
+
+        // following will re-render component immediately and not call next lines
+        this.$emit("reRenderGrid");
       }
 
-      this.userColor = data.userColor;
-      this.username = data.username;
+      this.$emit("updateUsername", data.username);
+      this.$emit("updateUserColor", data.userColor);
     },
 
     // Fired when the server sends something
