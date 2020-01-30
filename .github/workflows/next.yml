@@ -30,4 +30,4 @@ jobs:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
           NODE_ENV: production
         with:
-          args: container:release -a $STAGE_APP web
+          args: container:release -a $STAGE_APP -r staging web

@@ -30,7 +30,7 @@ jobs:
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
         with:
-          args: container:push -a $PRODUCTION_APP web
+          args: container:push -a $PRODUCTION_APP -r production web
 
       # Release latest PRODUCTION app using the latest
       # PRODUCTION container image
@@ -40,4 +40,4 @@ jobs:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
           NODE_ENV: production
         with:
-          args: container:release -a $PRODUCTION_APP web
+          args: container:release -a $PRODUCTION_APP -r production web
