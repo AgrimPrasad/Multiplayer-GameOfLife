@@ -1,3 +1,5 @@
+# Base docker image off a lightweight alpine based docker image for node
+# Using latest Node LTS (Long Term Support) version 12
 FROM node:12-alpine
 
 # Set NODE_ENV in CI/CD to production
@@ -14,7 +16,9 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 
 # Install node_modules into app directory
-RUN npm install
+# This command is similar to npm install, but for production apps
+# with faster, more reproducible builds.
+RUN npm ci --only=production
 
 # Bundle app source
 COPY . .

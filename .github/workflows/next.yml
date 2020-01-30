@@ -9,6 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       STAGE_APP: stark-plains-46658
+      STAGE_REMOTE: staging
     steps:
       - uses: actions/checkout@v2
 
@@ -22,6 +23,16 @@ jobs:
         with:
           args: container:login
 
+      # Build and push a docker image using the Dockerfile
+      # to the Heroku Container Registry
+      # using the STAGE_APP docker repository
+      - name: push
+        uses: actions/heroku@master
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        with:
+          args: container:push -a $STAGE_APP -r $STAGE_REMOTE web
+
       # Release latest STAGE app using the latest
       # STAGE container image
       - name: release
@@ -30,4 +41,4 @@ jobs:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
           NODE_ENV: production
         with:
-          args: container:release -a $STAGE_APP web
+          args: container:release -a $STAGE_APP -r $STAGE_REMOTE web
