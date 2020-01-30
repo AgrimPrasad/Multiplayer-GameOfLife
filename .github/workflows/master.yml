@@ -8,7 +8,9 @@ jobs:
     name: Production Deploy
     runs-on: ubuntu-latest
     env:
+      PRODUCTION_ADDRESS: stark-lake-47409.herokuapp.com
       PRODUCTION_APP: stark-lake-47409
+      PRODUCTION_REMOTE: production
     steps:
       - uses: actions/checkout@v2
 
@@ -30,7 +32,16 @@ jobs:
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
         with:
-          args: container:push -a $PRODUCTION_APP web
+          args: container:push -a $PRODUCTION_APP -r $PRODUCTION_REMOTE web
+
+      # Set the NODE_ENV environment variable to "production" in heroku config as default in heroku is "NODE_ENV=development"
+      # Check current value with "heroku run printenv --remote production"
+      - name: setenv
+        uses: actions/heroku@master
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        with:
+          args: config:set NODE_ENV=$PRODUCTION_REMOTE DEPLOY_ADDRESS=$PRODUCTION_ADDRESS -a $PRODUCTION_APP -r $PRODUCTION_REMOTE
 
       # Release latest PRODUCTION app using the latest
       # PRODUCTION container image
@@ -38,6 +49,5 @@ jobs:
         uses: actions/heroku@master
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-          NODE_ENV: production
         with:
-          args: container:release -a $PRODUCTION_APP web
+          args: container:release -a $PRODUCTION_APP -r $PRODUCTION_REMOTE web

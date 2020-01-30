@@ -8,7 +8,9 @@ jobs:
     name: Stage Deploy
     runs-on: ubuntu-latest
     env:
+      STAGE_ADDRESS: stark-plains-46658.herokuapp.com
       STAGE_APP: stark-plains-46658
+      STAGE_REMOTE: staging
     steps:
       - uses: actions/checkout@v2
 
@@ -22,12 +24,30 @@ jobs:
         with:
           args: container:login
 
+      # Build and push a docker image using the Dockerfile
+      # to the Heroku Container Registry
+      # using the STAGE_APP docker repository
+      - name: push
+        uses: actions/heroku@master
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        with:
+          args: container:push -a $STAGE_APP -r $STAGE_REMOTE web
+
+      # Set the NODE_ENV environment variable to "production" in heroku config as default in heroku is "NODE_ENV=development"
+      # Check current value with "heroku run printenv --remote staging"
+      - name: setenv
+        uses: actions/heroku@master
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        with:
+          args: config:set NODE_ENV=production DEPLOY_ADDRESS=$STAGE_ADDRESS -a $STAGE_APP -r $STAGE_REMOTE
+
       # Release latest STAGE app using the latest
       # STAGE container image
       - name: release
         uses: actions/heroku@master
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-          NODE_ENV: production
         with:
-          args: container:release -a $STAGE_APP web
+          args: container:release -a $STAGE_APP -r $STAGE_REMOTE web

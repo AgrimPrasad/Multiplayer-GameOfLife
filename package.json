@@ -30,6 +30,8 @@
     "core-js": "^2.6.5",
     "cors": "^2.8.5",
     "esm": "^3.2.25",
+    "express": "^4.17.1",
+    "express-swagger-generator": "^1.1.17",
     "hex-rgb": "^4.1.0",
     "morgan": "^1.9.1",
     "randomcolor": "^0.5.4",

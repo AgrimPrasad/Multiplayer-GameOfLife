@@ -4,9 +4,13 @@ import * as util from "../util";
 
 let router = Router();
 
-// GET request to get the current state of the grid
-// i.e. state of all cells, as well as whether
-// the simulation is running
+/**
+ * Get the current state of the grid
+ * @route GET /api/grid/current
+ * @group grid - Operations about the grid of cells
+ * @returns {object} 200 - An object with error(false) + current cell grid object + simulation running status
+ * @returns {Error}  500 - Unexpected error
+ */
 /* eslint-disable-next-line no-unused-vars */
 router.get("/current", function(req, res, next) {
   res.json({
@@ -16,8 +20,16 @@ router.get("/current", function(req, res, next) {
   });
 });
 
-// POST request to start simulation if not
-// started already
+/**
+ * Start the simulation if not started yet.
+ * userStartedSimulation event is broadcast using socket.io
+ * @route POST /api/grid/start
+ * @group grid - Operations about the grid of cells
+ * @param {string} socketID.body.required - socket ID from socket.io client connection
+ * @param {number} interval.body.required - interval (in ms) to run the simulation at
+ * @returns {object} 200 - An object with error (if any)
+ * @returns {Error}  500 - Unexpected error
+ */
 router.post("/start", function(req, res, next) {
   // user populated in response by middleware
   if (!res.user) {
@@ -60,9 +72,6 @@ router.post("/start", function(req, res, next) {
   // Start simulation
   shared.simulationId = setInterval(util.startSimulation, interval);
 
-  // Save message
-  // messages.push(message);
-
   // Broadcast message
   shared.io.sockets.emit("userStartedSimulation", {
     message: message
@@ -73,8 +82,15 @@ router.post("/start", function(req, res, next) {
   });
 });
 
-// POST request to pause simulation if
-// started already
+/**
+ * Pause the simulation if started already.
+ * userPausedSimulation event is broadcast using socket.io
+ * @route POST /api/grid/pause
+ * @group grid - Operations about the grid of cells
+ * @param {string} socketID.body.required - socket ID from socket.io client connection
+ * @returns {object} 200 - An object with error (if any)
+ * @returns {Error}  500 - Unexpected error
+ */
 router.post("/pause", function(req, res, next) {
   if (!res.user) {
     return next(new Error("socketId not found in list of users"));
@@ -102,9 +118,6 @@ router.post("/pause", function(req, res, next) {
   clearInterval(shared.simulationId);
   shared.simulationId = undefined;
 
-  // Save message
-  // messages.push(message);
-
   // Broadcast message
   shared.io.sockets.emit("userPausedSimulation", {
     message: message
@@ -115,8 +128,18 @@ router.post("/pause", function(req, res, next) {
   });
 });
 
-// POST request to change grid state
-// when a user clicks on the grid
+/**
+ * Change the grid state by registering a click on the grid
+ * userClickedGrid event is broadcast using socket.io
+ * @route POST /api/grid/click
+ * @group grid - Operations about the grid of cells
+ * @param {string} socketID.body.required - socket ID from socket.io client connection
+ * @param {number} x.body.required - x coordinate of cell
+ * @param {number} y.body.required - y coordinate of cell
+ * @param {boolean} isAlive.body.required - whether the cell should become alive or dead
+ * @returns {object} 200 - An object with error (if any)
+ * @returns {Error}  500 - Unexpected error
+ */
 router.post("/click", function(req, res, next) {
   if (!res.user) {
     return next(new Error("socketId not found in list of users"));
@@ -147,9 +170,6 @@ router.post("/click", function(req, res, next) {
     shared.grid
   );
 
-  // Save message
-  // messages.push(message);
-
   // Broadcast message
   shared.io.sockets.emit("userClickedGrid", {
     message: message
@@ -160,8 +180,16 @@ router.post("/click", function(req, res, next) {
   });
 });
 
-// POST request to change grid state
-// when a user clicks on multiple cells on the grid
+/**
+ * Change the grid state by registering clicks on multiple cells on the grid (e.g. for pattern)
+ * userClickedMultiple event is broadcast using socket.io
+ * @route POST /api/grid/clicks
+ * @group grid - Operations about the grid of cells
+ * @param {string} socketID.body.required - socket ID from socket.io client connection
+ * @param {object} cells.body.required - Array of modified cell objects with x, y and isAlive values for each cell
+ * @returns {object} 200 - An object with error (if any)
+ * @returns {Error}  500 - Unexpected error
+ */
 router.post("/clicks", function(req, res, next) {
   if (!res.user) {
     return next(new Error("socketId not found in list of users"));
@@ -194,9 +222,6 @@ router.post("/clicks", function(req, res, next) {
     cells: cells
   };
 
-  // Save message
-  // messages.push(message);
-
   // Broadcast message
   shared.io.sockets.emit("userClickedMultiple", {
     message: message
@@ -207,7 +232,15 @@ router.post("/clicks", function(req, res, next) {
   });
 });
 
-// POST request to reset grid state
+/**
+ * Reset all cells on the grid and restart simulation
+ * userResetGrid event is broadcast using socket.io
+ * @route POST /api/grid/reset
+ * @group grid - Operations about the grid of cells
+ * @param {string} socketID.body.required - socket ID from socket.io client connection
+ * @returns {object} 200 - An object with error (if any)
+ * @returns {Error}  500 - Unexpected error
+ */
 router.post("/reset", function(req, res, next) {
   if (!res.user) {
     return next(new Error("socketId not found in list of users"));
@@ -240,9 +273,6 @@ router.post("/reset", function(req, res, next) {
     shared.simulationId = setInterval(util.startSimulation, interval);
   }
 
-  // Save message
-  // messages.push(message);
-
   // Broadcast message
   shared.io.sockets.emit("userResetGrid", {
     message: message
@@ -253,7 +283,16 @@ router.post("/reset", function(req, res, next) {
   });
 });
 
-// POST request to change timer interval
+/**
+ * Change the timer interval for the simulation.
+ * userChangedInterval event is broadcast using socket.io
+ * @route POST /api/grid/interval
+ * @group grid - Operations about the grid of cells
+ * @param {string} socketID.body.required - socket ID from socket.io client connection
+ * @param {number} interval.body.required - interval (in ms) to run the simulation at
+ * @returns {object} 200 - An object with error (if any)
+ * @returns {Error}  500 - Unexpected error
+ */
 router.post("/interval", function(req, res, next) {
   if (!res.user) {
     return next(new Error("socketId not found in list of users"));
@@ -298,9 +337,6 @@ router.post("/interval", function(req, res, next) {
   if (simulationWasRunning) {
     shared.simulationId = setInterval(util.startSimulation, interval);
   }
-
-  // Save message
-  // messages.push(message);
 
   // Broadcast message
   shared.io.sockets.emit("userChangedInterval", {
