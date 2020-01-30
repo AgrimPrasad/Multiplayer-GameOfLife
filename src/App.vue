@@ -279,7 +279,7 @@ export default {
     // Fired when the server sends something
     // on the "userStartedSimulation" channel.
     userStartedSimulation() {
-      // message is broadcasted, so check if play message triggered by this client itself
+      // message is broadcasted, so check if play message triggered by this client itself by checking the isRunning status
       if (!this.isRunning) {
         this.delegate("play");
       }
@@ -288,7 +288,7 @@ export default {
     // Fired when the server sends something
     // on the "userPausedSimulation" channel.
     userPausedSimulation() {
-      // message is broadcasted, so check if pause message triggered by this client itself
+      // message is broadcasted, so check if pause message triggered by this client itself by checking the isRunning status
       if (this.isRunning) {
         this.delegate("play");
       }
