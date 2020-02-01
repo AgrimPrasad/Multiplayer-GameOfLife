@@ -15,7 +15,12 @@ server.listen(process.env.PORT || 3000);
 
 // Initiate Socket.io using the same http server
 // created above
-shared.io = socketIO.listen(server);
+shared.io = socketIO(server, {
+  // don't set unused socket.io cookie
+  // Chrome will stop supporting cookies set without same-site attribute
+  // from Feb 2020
+  cookie: false
+});
 
 // On a new connection event,
 // create a new user
