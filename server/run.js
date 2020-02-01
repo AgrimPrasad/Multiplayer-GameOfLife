@@ -15,7 +15,9 @@ server.listen(process.env.PORT || 3000);
 
 // Initiate Socket.io using the same http server
 // created above
-shared.io = socketIO.listen(server);
+shared.io = socketIO(server, {
+  cookie: false
+});
 
 // On a new connection event,
 // create a new user
